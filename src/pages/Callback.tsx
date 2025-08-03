@@ -13,7 +13,7 @@ export default function Callback() {
       return;
     }
 
-    fetch("http://127.0.0.1:5000/callback", {
+    fetch("http://127.0.0.1:5000/fetch_playlists", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -21,12 +21,15 @@ export default function Callback() {
       credentials: "include",
       body: JSON.stringify({ code })
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
         setPlaylists(data);
         setStatus("Playlists fetched");
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         setStatus("Error fetching playlists");
       });
@@ -37,7 +40,9 @@ export default function Callback() {
       <h1>{status}</h1>
       <ul>
         {playlists.map((p) => (
-          <li key={p.id}>{p.name} ({p.tracks_total} tracks)</li>
+          <li key={p.id}>
+            {p.name} ({p.tracks_total} tracks)
+          </li>
         ))}
       </ul>
     </div>
