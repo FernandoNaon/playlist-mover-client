@@ -82,9 +82,9 @@ export default function Home() {
               className="heading-xl mb-6 animate-fade-in-up"
               style={{ opacity: 0, animationDelay: '0.2s', animationFillMode: 'forwards' }}
             >
-              Move your music
+              Migrate Beats
               <br />
-              <span className="italic" style={{ color: 'var(--green-primary)' }}>anywhere you go</span>
+              <span className="italic" style={{ color: 'var(--green-primary)' }}>Move your music anywhere you go</span>
             </h1>
 
             <p
@@ -329,7 +329,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Disc3 className="w-5 h-5" style={{ color: 'var(--green-primary)' }} />
-            <span className="font-display font-medium">Crate</span>
+            <span className="font-display font-medium">Migrate Beats</span>
           </div>
           <p className="text-sm" style={{ color: 'var(--text-light)' }}>
             Made with love for music lovers everywhere

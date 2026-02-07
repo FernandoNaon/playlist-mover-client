@@ -151,6 +151,31 @@ export async function getLibraryStats(code: string): Promise<LibraryStats> {
   });
 }
 
+// ==================== LIKED SONGS ====================
+
+export interface LikedTrack extends Track {
+  added_at: string;
+}
+
+export interface LikedSongsResponse {
+  tracks: LikedTrack[];
+  total: number;
+  limit: number;
+  offset: number;
+  has_more: boolean;
+}
+
+export async function fetchLikedSongs(
+  code: string,
+  limit: number = 50,
+  offset: number = 0
+): Promise<LikedSongsResponse> {
+  return fetchApi("/liked_songs", {
+    method: "POST",
+    body: JSON.stringify({ code, limit, offset }),
+  });
+}
+
 // ==================== TIDAL ====================
 
 export interface TidalLoginResponse {
@@ -273,6 +298,29 @@ export async function migratePlaylist(
       spotify_code: spotifyCode,
       tidal_session_id: tidalSessionId,
       playlist_id: playlistId,
+      playlist_name: playlistName,
+    }),
+  });
+}
+
+export interface TrackToMigrate {
+  name: string;
+  artist: string;
+  album: string;
+}
+
+export async function migrateTracks(
+  spotifyCode: string,
+  tidalSessionId: string,
+  tracks: TrackToMigrate[],
+  playlistName: string
+): Promise<MigrationResult> {
+  return fetchApi("/migrate_tracks", {
+    method: "POST",
+    body: JSON.stringify({
+      spotify_code: spotifyCode,
+      tidal_session_id: tidalSessionId,
+      tracks,
       playlist_name: playlistName,
     }),
   });

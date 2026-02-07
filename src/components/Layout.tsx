@@ -42,7 +42,7 @@ export default function Layout() {
             </div>
             <div>
               <h1 className="font-display font-semibold text-lg" style={{ color: 'var(--text-dark)' }}>
-                Crate
+                Migrate Beats
               </h1>
               <p className="text-xs" style={{ color: 'var(--text-medium)' }}>
                 Move your music
