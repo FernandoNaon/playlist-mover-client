@@ -55,7 +55,6 @@ export default function Home() {
             >
               <Disc3 className="w-5 h-5 text-white" />
             </div>
-            <span className="font-display text-xl font-medium">Crate</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="link-hover text-sm">Features</a>
