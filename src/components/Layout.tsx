@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { LayoutDashboard, ListMusic, Settings, LogOut, Disc3 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -17,15 +18,21 @@ export default function Layout() {
       <aside
         className="w-64 flex flex-col"
         style={{
-          background: 'white',
+          background: 'var(--bg-warm)',
           borderRight: '1px solid var(--border-light)'
         }}
       >
-        {/* Logo */}
+        {/* Logo & Theme Toggle */}
         <div
-          className="p-6"
+          className="p-4"
           style={{ borderBottom: '1px solid var(--border-light)' }}
         >
+          {/* Theme Toggle */}
+          <div className="mb-4">
+            <ThemeToggle />
+          </div>
+
+          {/* Logo */}
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-2xl flex items-center justify-center"

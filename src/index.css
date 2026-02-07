@@ -360,3 +360,80 @@ h1, h2, h3, h4 {
 .gradient-green {
   background: linear-gradient(135deg, var(--green-pale) 0%, var(--bg-cream) 100%);
 }
+
+/* Theme-specific card styling */
+.theme-tech .card {
+  background: #18181b;
+  border-color: #27272a;
+}
+
+.theme-tech .card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.theme-tech .btn-secondary {
+  color: #a1a1aa;
+  border-color: #3f3f46;
+}
+
+.theme-tech .btn-secondary:hover {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.theme-tech .pill-nav {
+  background: #27272a;
+}
+
+.theme-tech .pill-nav button {
+  color: #71717a;
+}
+
+.theme-tech .pill-nav button:hover {
+  color: #a1a1aa;
+}
+
+.theme-tech .pill-nav button.active {
+  background: #3f3f46;
+  color: #ffffff;
+}
+
+.theme-tech .link-hover {
+  color: #22c55e;
+}
+
+.theme-tech .link-hover::after {
+  background: #4ade80;
+}
+
+/* Tech mode playlist columns */
+.theme-tech .playlist-column {
+  background: #18181b !important;
+}
+
+/* Tech mode inputs */
+.theme-tech input[type="text"] {
+  background: #27272a !important;
+  border-color: #3f3f46 !important;
+  color: #ffffff !important;
+}
+
+.theme-tech input[type="text"]::placeholder {
+  color: #71717a;
+}
+
+/* Tech mode tag */
+.theme-tech .tag {
+  background: #22c55e20;
+  color: #22c55e;
+}
+
+.theme-tech .tag-coral {
+  background: #f8717120;
+  color: #f87171;
+}
+
+.theme-tech .tag-blue {
+  background: #06b6d420;
+  color: #06b6d4;
+}

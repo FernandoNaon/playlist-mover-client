@@ -401,8 +401,8 @@ export default function Playlists() {
 
       {/* Spotify Playlists Column */}
       <div
-        className={`w-72 flex flex-col ${mergeMode ? 'mt-14' : ''}`}
-        style={{ background: 'white', borderRight: '1px solid var(--border-light)' }}
+        className={`w-72 flex flex-col playlist-column ${mergeMode ? 'mt-14' : ''}`}
+        style={{ background: 'var(--bg-warm)', borderRight: '1px solid var(--border-light)' }}
       >
         <div
           className="p-4"
@@ -874,8 +874,8 @@ export default function Playlists() {
 
       {/* Tidal Playlists Column */}
       <div
-        className={`w-72 flex flex-col ${mergeMode ? 'mt-14' : ''}`}
-        style={{ background: 'white', borderLeft: '1px solid var(--border-light)' }}
+        className={`w-72 flex flex-col playlist-column ${mergeMode ? 'mt-14' : ''}`}
+        style={{ background: 'var(--bg-warm)', borderLeft: '1px solid var(--border-light)' }}
       >
         <div
           className="p-4"
