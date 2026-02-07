@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, ListMusic, Settings, LogOut, Disc3 } from "lucide-react";
+import { LayoutDashboard, ListMusic, Heart, Settings, LogOut, Disc3 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/playlists", icon: ListMusic, label: "Playlists" },
+  { to: "/liked-songs", icon: Heart, label: "Liked Songs" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
@@ -42,7 +43,7 @@ export default function Layout() {
             </div>
             <div>
               <h1 className="font-display font-semibold text-lg" style={{ color: 'var(--text-dark)' }}>
-                Crate
+                Migrate Beats
               </h1>
               <p className="text-xs" style={{ color: 'var(--text-medium)' }}>
                 Move your music

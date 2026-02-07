@@ -151,6 +151,31 @@ export async function getLibraryStats(code: string): Promise<LibraryStats> {
   });
 }
 
+// ==================== LIKED SONGS ====================
+
+export interface LikedTrack extends Track {
+  added_at: string;
+}
+
+export interface LikedSongsResponse {
+  tracks: LikedTrack[];
+  total: number;
+  limit: number;
+  offset: number;
+  has_more: boolean;
+}
+
+export async function fetchLikedSongs(
+  code: string,
+  limit: number = 50,
+  offset: number = 0
+): Promise<LikedSongsResponse> {
+  return fetchApi("/liked_songs", {
+    method: "POST",
+    body: JSON.stringify({ code, limit, offset }),
+  });
+}
+
 // ==================== TIDAL ====================
 
 export interface TidalLoginResponse {
@@ -274,6 +299,35 @@ export async function migratePlaylist(
       tidal_session_id: tidalSessionId,
       playlist_id: playlistId,
       playlist_name: playlistName,
+    }),
+  });
+}
+
+export interface TrackToMigrate {
+  name: string;
+  artist: string;
+  album: string;
+}
+
+export interface MigrateTracksOptions {
+  spotifyCode: string;
+  tidalSessionId: string;
+  tracks: TrackToMigrate[];
+  playlistName?: string;
+  targetPlaylistId?: string;  // Existing playlist ID
+  addToFavorites?: boolean;   // Add to Tidal favorites
+}
+
+export async function migrateTracks(options: MigrateTracksOptions): Promise<MigrationResult> {
+  return fetchApi("/migrate_tracks", {
+    method: "POST",
+    body: JSON.stringify({
+      spotify_code: options.spotifyCode,
+      tidal_session_id: options.tidalSessionId,
+      tracks: options.tracks,
+      playlist_name: options.playlistName || "Migrated Songs",
+      target_playlist_id: options.targetPlaylistId,
+      add_to_favorites: options.addToFavorites,
     }),
   });
 }
