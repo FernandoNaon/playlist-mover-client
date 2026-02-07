@@ -136,7 +136,6 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold mb-2">
           Welcome back, {spotifyUser?.display_name?.split(" ")[0] || "there"}!
         </h1>
-        {/* <p className="text-gray-400">Here's your Spotify listening activity</p> */}
       </div>
 
       {/* Quick Actions - Sync to Tidal */}
