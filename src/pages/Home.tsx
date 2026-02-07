@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Sparkles, Music, Disc3, Heart } from "lucide-react";
 import { getSpotifyLoginUrl } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function Home() {
   const [loginUrl, setLoginUrl] = useState("");
@@ -48,7 +49,8 @@ export default function Home() {
       {/* Header */}
       <header className="relative z-10 px-6 md:px-12 py-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
             <div
               className="w-10 h-10 rounded-2xl flex items-center justify-center"
               style={{ background: 'var(--green-primary)' }}

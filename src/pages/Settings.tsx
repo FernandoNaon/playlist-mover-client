@@ -116,48 +116,54 @@ export default function Settings() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-12 h-12 border-4 border-green-500/30 border-t-green-500 rounded-full animate-spin" />
+      <div className="flex items-center justify-center h-full" style={{ background: 'var(--bg-cream)' }}>
+        <div
+          className="w-12 h-12 rounded-full animate-spin"
+          style={{ border: '4px solid var(--green-pale)', borderTopColor: 'var(--green-primary)' }}
+        />
       </div>
     );
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-8 max-w-4xl mx-auto" style={{ background: 'var(--bg-cream)', minHeight: '100%' }}>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <SettingsIcon className="w-8 h-8" />
+        <h1 className="heading-lg mb-2 flex items-center gap-3" style={{ color: 'var(--text-dark)' }}>
+          <SettingsIcon className="w-8 h-8" style={{ color: 'var(--green-primary)' }} />
           Settings
         </h1>
-        <p className="text-gray-400">Manage your connected accounts</p>
+        <p style={{ color: 'var(--text-medium)' }}>Manage your connected accounts</p>
       </div>
 
       {/* Connected Accounts */}
       <div className="space-y-6">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Link2 className="w-5 h-5 text-gray-400" />
+        <h2 className="text-lg font-display font-semibold flex items-center gap-2" style={{ color: 'var(--text-dark)' }}>
+          <Link2 className="w-5 h-5" style={{ color: 'var(--text-medium)' }} />
           Connected Accounts
         </h2>
 
         {/* Spotify Connection */}
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="card p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-green-500/10 flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="currentColor">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                style={{ background: '#1DB95420' }}
+              >
+                <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#1DB954">
                   <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg">Spotify</h3>
+                <h3 className="font-display font-semibold text-lg" style={{ color: 'var(--text-dark)' }}>Spotify</h3>
                 {isSpotifyConnected && spotifyUser ? (
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                  <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-medium)' }}>
+                    <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--green-primary)' }} />
                     Connected as {spotifyUser.display_name}
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <XCircle className="w-4 h-4 text-red-400" />
+                  <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-medium)' }}>
+                    <XCircle className="w-4 h-4" style={{ color: 'var(--coral)' }} />
                     Not connected
                   </div>
                 )}
@@ -166,7 +172,7 @@ export default function Settings() {
             {isSpotifyConnected ? (
               <button
                 onClick={handleReconnectSpotify}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                className="btn-secondary"
               >
                 <RefreshCw className="w-4 h-4" />
                 Reconnect
@@ -174,53 +180,60 @@ export default function Settings() {
             ) : (
               <button
                 onClick={handleReconnectSpotify}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-400 text-black font-semibold rounded-lg transition-colors"
+                className="btn-primary"
+                style={{ background: '#1DB954' }}
               >
                 Connect
               </button>
             )}
           </div>
           {spotifyUser && (
-            <div className="mt-4 pt-4 border-t border-gray-800 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div
+              className="mt-4 pt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm"
+              style={{ borderTop: '1px solid var(--border-light)' }}
+            >
               <div>
-                <p className="text-gray-500">Account Type</p>
-                <p className="capitalize">{spotifyUser.product || "Free"}</p>
+                <p style={{ color: 'var(--text-light)' }}>Account Type</p>
+                <p className="capitalize font-medium" style={{ color: 'var(--text-dark)' }}>{spotifyUser.product || "Free"}</p>
               </div>
               <div>
-                <p className="text-gray-500">Country</p>
-                <p>{spotifyUser.country || "N/A"}</p>
+                <p style={{ color: 'var(--text-light)' }}>Country</p>
+                <p className="font-medium" style={{ color: 'var(--text-dark)' }}>{spotifyUser.country || "N/A"}</p>
               </div>
               <div>
-                <p className="text-gray-500">Followers</p>
-                <p>{spotifyUser.followers.toLocaleString()}</p>
+                <p style={{ color: 'var(--text-light)' }}>Followers</p>
+                <p className="font-medium" style={{ color: 'var(--text-dark)' }}>{spotifyUser.followers.toLocaleString()}</p>
               </div>
               <div>
-                <p className="text-gray-500">User ID</p>
-                <p className="truncate">{spotifyUser.id}</p>
+                <p style={{ color: 'var(--text-light)' }}>User ID</p>
+                <p className="truncate font-medium" style={{ color: 'var(--text-dark)' }}>{spotifyUser.id}</p>
               </div>
             </div>
           )}
         </div>
 
         {/* Tidal Connection */}
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="card p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center">
-                <svg className="w-8 h-8 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                style={{ background: 'var(--blue-soft)' }}
+              >
+                <svg className="w-8 h-8" viewBox="0 0 24 24" fill="var(--blue-accent)">
                   <path d="M12.012 3.992L8.008 7.996 4.004 3.992 0 7.996l4.004 4.004L0 16.004l4.004 4.004 4.004-4.004 4.004 4.004 4.004-4.004-4.004-4.004 4.004-4.004-4.004-4.004zm4.004 4.004l4.004-4.004L24.024 7.996l-4.004 4.004 4.004 4.004-4.004 4.004-4.004-4.004z" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg">Tidal</h3>
+                <h3 className="font-display font-semibold text-lg" style={{ color: 'var(--text-dark)' }}>Tidal</h3>
                 {isTidalConnected && tidalUser ? (
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+                  <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-medium)' }}>
+                    <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--blue-accent)' }} />
                     Connected as {tidalUser.name}
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <XCircle className="w-4 h-4 text-red-400" />
+                  <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-medium)' }}>
+                    <XCircle className="w-4 h-4" style={{ color: 'var(--coral)' }} />
                     Not connected
                   </div>
                 )}
@@ -229,7 +242,8 @@ export default function Settings() {
             {!isTidalConnected && !tidalLoginData && (
               <button
                 onClick={handleConnectTidal}
-                className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-lg transition-colors"
+                className="btn-primary"
+                style={{ background: 'var(--blue-accent)' }}
               >
                 Connect
               </button>
@@ -238,13 +252,19 @@ export default function Settings() {
 
           {/* Tidal Login Flow */}
           {tidalLoginData && (
-            <div className="mt-4 pt-4 border-t border-gray-800">
-              <div className="bg-gray-800 rounded-xl p-4">
-                <h4 className="font-medium mb-2 flex items-center gap-2">
+            <div
+              className="mt-4 pt-4"
+              style={{ borderTop: '1px solid var(--border-light)' }}
+            >
+              <div
+                className="rounded-2xl p-4"
+                style={{ background: 'var(--bg-warm)' }}
+              >
+                <h4 className="font-medium mb-2 flex items-center gap-2" style={{ color: 'var(--text-dark)' }}>
                   <ExternalLink className="w-4 h-4" />
                   Complete Tidal Authorization
                 </h4>
-                <p className="text-sm text-gray-400 mb-4">
+                <p className="text-sm mb-4" style={{ color: 'var(--text-medium)' }}>
                   Click the button below to open Tidal login, then authorize the app:
                 </p>
 
@@ -253,33 +273,41 @@ export default function Settings() {
                   href={tidalLoginData.verification_uri}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-lg transition-colors mb-4"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3 font-semibold rounded-xl transition-colors mb-4"
+                  style={{ background: 'var(--blue-accent)', color: 'white' }}
                 >
                   <ExternalLink className="w-5 h-5" />
                   Open Tidal Login Page
                 </a>
 
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="text-sm text-gray-400">Your code:</span>
-                  <code className="flex-1 bg-gray-900 px-3 py-2 rounded text-sm text-cyan-400 font-mono font-bold text-center">
+                  <span className="text-sm" style={{ color: 'var(--text-medium)' }}>Your code:</span>
+                  <code
+                    className="flex-1 px-3 py-2 rounded-lg text-sm font-mono font-bold text-center"
+                    style={{ background: 'white', color: 'var(--blue-accent)', border: '1px solid var(--border-light)' }}
+                  >
                     {tidalLoginData.user_code}
                   </code>
                 </div>
-                <p className="text-xs text-gray-500 mb-4">
+                <p className="text-xs mb-4" style={{ color: 'var(--text-light)' }}>
                   Code expires in ~5 minutes. Click the button above to open Tidal and authorize.
                 </p>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-medium)' }}>
                     {isCheckingTidal && (
                       <>
-                        <div className="w-4 h-4 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+                        <div
+                          className="w-4 h-4 rounded-full animate-spin"
+                          style={{ border: '2px solid var(--blue-soft)', borderTopColor: 'var(--blue-accent)' }}
+                        />
                         Waiting for authorization...
                       </>
                     )}
                   </div>
                   <button
                     onClick={handleCancelTidalLogin}
-                    className="text-sm text-gray-400 hover:text-white"
+                    className="text-sm font-medium"
+                    style={{ color: 'var(--text-medium)' }}
                   >
                     Cancel
                   </button>
@@ -289,7 +317,10 @@ export default function Settings() {
           )}
 
           {tidalError && (
-            <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+            <div
+              className="mt-4 p-4 rounded-2xl text-sm"
+              style={{ background: 'var(--peach)', border: '1px solid var(--coral-light)', color: 'var(--coral)' }}
+            >
               {tidalError}
             </div>
           )}
@@ -298,17 +329,21 @@ export default function Settings() {
 
       {/* Danger Zone */}
       <div className="mt-12">
-        <div className="bg-gray-900 rounded-2xl border border-red-500/20 p-6">
+        <div
+          className="card p-6"
+          style={{ border: '1px solid var(--coral-light)' }}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold">Disconnect All Accounts</h3>
-              <p className="text-sm text-gray-400">
+              <h3 className="font-display font-semibold" style={{ color: 'var(--text-dark)' }}>Disconnect All Accounts</h3>
+              <p className="text-sm" style={{ color: 'var(--text-medium)' }}>
                 This will log you out and disconnect all connected services
               </p>
             </div>
             <button
               onClick={logout}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-colors"
+              style={{ background: 'var(--peach)', color: 'var(--coral)', border: '1px solid var(--coral-light)' }}
             >
               <LogOut className="w-4 h-4" />
               Logout

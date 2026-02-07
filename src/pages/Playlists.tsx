@@ -328,8 +328,11 @@ export default function Playlists() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-12 h-12 border-4 border-green-500/30 border-t-green-500 rounded-full animate-spin" />
+      <div className="flex items-center justify-center h-full" style={{ background: 'var(--bg-cream)' }}>
+        <div
+          className="w-12 h-12 rounded-full animate-spin"
+          style={{ border: '4px solid var(--green-pale)', borderTopColor: 'var(--green-primary)' }}
+        />
       </div>
     );
   }
@@ -338,10 +341,10 @@ export default function Playlists() {
     <div className="p-4 space-y-3">
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gray-800 rounded animate-pulse" />
+          <div className="w-12 h-12 rounded-xl animate-pulse" style={{ background: 'var(--bg-warm)' }} />
           <div className="flex-1">
-            <div className="w-32 h-4 bg-gray-800 rounded animate-pulse mb-2" />
-            <div className="w-20 h-3 bg-gray-800 rounded animate-pulse" />
+            <div className="w-32 h-4 rounded animate-pulse mb-2" style={{ background: 'var(--bg-warm)' }} />
+            <div className="w-20 h-3 rounded animate-pulse" style={{ background: 'var(--bg-warm)' }} />
           </div>
         </div>
       ))}
@@ -349,32 +352,36 @@ export default function Playlists() {
   );
 
   const TrackSkeleton = () => (
-    <div className="divide-y divide-gray-800">
+    <div style={{ borderTop: '1px solid var(--border-light)' }}>
       {Array.from({ length: 10 }).map((_, i) => (
         <div
           key={i}
           className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 items-center"
+          style={{ borderBottom: '1px solid var(--border-light)' }}
         >
-          <div className="w-8 h-4 bg-gray-800 rounded animate-pulse" />
+          <div className="w-8 h-4 rounded animate-pulse" style={{ background: 'var(--bg-warm)' }} />
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-800 rounded animate-pulse" />
+            <div className="w-10 h-10 rounded-lg animate-pulse" style={{ background: 'var(--bg-warm)' }} />
             <div>
-              <div className="w-32 h-4 bg-gray-800 rounded animate-pulse mb-2" />
-              <div className="w-24 h-3 bg-gray-800 rounded animate-pulse" />
+              <div className="w-32 h-4 rounded animate-pulse mb-2" style={{ background: 'var(--bg-warm)' }} />
+              <div className="w-24 h-3 rounded animate-pulse" style={{ background: 'var(--bg-warm)' }} />
             </div>
           </div>
-          <div className="w-24 h-4 bg-gray-800 rounded animate-pulse" />
-          <div className="w-12 h-4 bg-gray-800 rounded animate-pulse" />
+          <div className="w-24 h-4 rounded animate-pulse" style={{ background: 'var(--bg-warm)' }} />
+          <div className="w-12 h-4 rounded animate-pulse" style={{ background: 'var(--bg-warm)' }} />
         </div>
       ))}
     </div>
   );
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full" style={{ background: 'var(--bg-cream)' }}>
       {/* Merge Mode Banner */}
       {mergeMode && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-purple-600 text-white py-3 px-6 flex items-center justify-between shadow-lg">
+        <div
+          className="fixed top-0 left-64 right-0 z-50 py-3 px-6 flex items-center justify-between shadow-lg"
+          style={{ background: 'var(--blue-accent)', color: 'white' }}
+        >
           <div className="flex items-center gap-3">
             <Merge className="w-5 h-5" />
             <span>
@@ -384,7 +391,8 @@ export default function Playlists() {
           </div>
           <button
             onClick={cancelMergeMode}
-            className="px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+            className="px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
+            style={{ background: 'rgba(255,255,255,0.2)' }}
           >
             Cancel
           </button>
@@ -392,22 +400,36 @@ export default function Playlists() {
       )}
 
       {/* Spotify Playlists Column */}
-      <div className={`w-72 border-r border-gray-800 flex flex-col ${mergeMode ? 'mt-14' : ''}`}>
-        <div className="p-4 border-b border-gray-800 bg-gradient-to-r from-green-500/10 to-transparent">
-          <h2 className="font-semibold mb-4 flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-              <ListMusic className="w-4 h-4 text-black" />
+      <div
+        className={`w-72 flex flex-col playlist-column ${mergeMode ? 'mt-14' : ''}`}
+        style={{ background: 'var(--bg-warm)', borderRight: '1px solid var(--border-light)' }}
+      >
+        <div
+          className="p-4"
+          style={{ borderBottom: '1px solid var(--border-light)', background: 'linear-gradient(135deg, #1DB95410 0%, transparent 100%)' }}
+        >
+          <h2 className="font-display font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-dark)' }}>
+            <div
+              className="w-6 h-6 rounded-full flex items-center justify-center"
+              style={{ background: '#1DB954' }}
+            >
+              <ListMusic className="w-3.5 h-3.5 text-white" />
             </div>
             Spotify Playlists
           </h2>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-light)' }} />
             <input
               type="text"
               placeholder="Search..."
               value={spotifySearchQuery}
               onChange={(e) => setSpotifySearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:border-green-500"
+              className="w-full pl-10 pr-4 py-2 rounded-xl text-sm focus:outline-none transition-colors"
+              style={{
+                background: 'var(--bg-warm)',
+                border: '1px solid var(--border-light)',
+                color: 'var(--text-dark)'
+              }}
             />
           </div>
         </div>
@@ -416,35 +438,45 @@ export default function Playlists() {
           {isLoadingSpotify ? (
             <PlaylistSkeleton />
           ) : filteredSpotifyPlaylists.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
+            <div className="p-4 text-center" style={{ color: 'var(--text-medium)' }}>
               <ListMusic className="w-8 h-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No playlists found</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-800">
+            <div>
               {filteredSpotifyPlaylists.map((playlist) => (
                 <button
                   key={playlist.id}
                   onClick={() => handleSelectSpotifyPlaylist(playlist)}
                   disabled={mergeMode}
-                  className={`w-full p-3 flex items-center gap-3 hover:bg-gray-800/50 transition-colors text-left ${
-                    selectedSpotifyPlaylist?.id === playlist.id ? "bg-green-500/10 border-l-2 border-green-500" : ""
-                  } ${mergeMode ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className="w-full p-3 flex items-center gap-3 transition-colors text-left"
+                  style={{
+                    borderBottom: '1px solid var(--border-light)',
+                    background: selectedSpotifyPlaylist?.id === playlist.id ? 'var(--green-pale)' : 'transparent',
+                    borderLeft: selectedSpotifyPlaylist?.id === playlist.id ? '3px solid var(--green-primary)' : '3px solid transparent',
+                    opacity: mergeMode ? 0.5 : 1,
+                    cursor: mergeMode ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   {playlist.image ? (
                     <img
                       src={playlist.image}
                       alt={playlist.name}
-                      className="w-10 h-10 rounded object-cover"
+                      className="w-10 h-10 rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="w-10 h-10 bg-gray-800 rounded flex items-center justify-center">
-                      <ListMusic className="w-5 h-5 text-gray-600" />
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ background: 'var(--bg-warm)' }}
+                    >
+                      <ListMusic className="w-5 h-5" style={{ color: 'var(--text-light)' }} />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{playlist.name}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="font-medium text-sm truncate" style={{ color: 'var(--text-dark)' }}>
+                      {playlist.name}
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--text-medium)' }}>
                       {playlist.tracks_total} tracks
                     </p>
                   </div>
@@ -453,38 +485,46 @@ export default function Playlists() {
             </div>
           )}
         </div>
-        <div className="p-3 border-t border-gray-800 bg-gray-900/50">
-          <p className="text-xs text-gray-500 text-center">
+        <div
+          className="p-3"
+          style={{ borderTop: '1px solid var(--border-light)', background: 'var(--bg-warm)' }}
+        >
+          <p className="text-xs text-center" style={{ color: 'var(--text-medium)' }}>
             {spotifyPlaylists.length} playlists
           </p>
         </div>
       </div>
 
       {/* Center - Selected Playlist Details */}
-      <div className={`flex-1 overflow-auto ${mergeMode ? 'mt-14' : ''}`}>
+      <div className={`flex-1 overflow-auto ${mergeMode ? 'mt-14' : ''}`} style={{ background: 'var(--bg-cream)' }}>
         {selectedSpotifyPlaylist && activeView === "spotify" ? (
-          <div className="p-6">
+          <div className="p-8">
             {/* Spotify Playlist Header */}
             <div className="flex items-start gap-6 mb-8">
               {selectedSpotifyPlaylist.image ? (
                 <img
                   src={selectedSpotifyPlaylist.image}
                   alt={selectedSpotifyPlaylist.name}
-                  className="w-40 h-40 rounded-xl object-cover shadow-xl"
+                  className="w-40 h-40 rounded-2xl object-cover shadow-lg"
                 />
               ) : (
-                <div className="w-40 h-40 bg-gray-800 rounded-xl flex items-center justify-center">
-                  <ListMusic className="w-12 h-12 text-gray-600" />
+                <div
+                  className="w-40 h-40 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'var(--bg-warm)' }}
+                >
+                  <ListMusic className="w-12 h-12" style={{ color: 'var(--text-light)' }} />
                 </div>
               )}
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full font-medium">
+                  <span className="tag" style={{ background: '#1DB95420', color: '#1DB954' }}>
                     Spotify
                   </span>
                 </div>
-                <h1 className="text-3xl font-bold mb-2">{selectedSpotifyPlaylist.name}</h1>
-                <p className="text-gray-400 mb-4">
+                <h1 className="heading-lg mb-2" style={{ color: 'var(--text-dark)' }}>
+                  {selectedSpotifyPlaylist.name}
+                </h1>
+                <p className="mb-4" style={{ color: 'var(--text-medium)' }}>
                   {selectedSpotifyPlaylist.owner} • {selectedSpotifyPlaylist.tracks_total} tracks
                 </p>
 
@@ -493,11 +533,14 @@ export default function Playlists() {
                   <button
                     onClick={handleMigrate}
                     disabled={isMigrating || spotifyTracks.length === 0}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-400 hover:to-cyan-400 text-black font-semibold rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn-primary"
                   >
                     {isMigrating ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                        <div
+                          className="w-5 h-5 rounded-full animate-spin"
+                          style={{ border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white' }}
+                        />
                         Migrating...
                       </>
                     ) : (
@@ -510,7 +553,7 @@ export default function Playlists() {
                 ) : (
                   <button
                     onClick={() => navigate("/settings")}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-full transition-all"
+                    className="btn-secondary"
                   >
                     <ExternalLink className="w-5 h-5" />
                     Connect Tidal to migrate
@@ -522,47 +565,43 @@ export default function Playlists() {
             {/* Migration Result */}
             {migrationResult && (
               <div
-                className={`p-4 rounded-xl mb-6 ${
-                  migrationResult.success
-                    ? "bg-green-500/10 border border-green-500/20"
-                    : "bg-red-500/10 border border-red-500/20"
-                }`}
+                className="p-4 rounded-2xl mb-6"
+                style={{
+                  background: migrationResult.success ? 'var(--green-pale)' : 'var(--peach)',
+                  border: migrationResult.success ? '1px solid var(--green-light)' : '1px solid var(--coral-light)'
+                }}
               >
                 <div className="flex items-start gap-3">
                   {migrationResult.success ? (
-                    <Check className="w-6 h-6 text-green-400 flex-shrink-0" />
+                    <Check className="w-6 h-6 flex-shrink-0" style={{ color: 'var(--green-primary)' }} />
                   ) : (
-                    <X className="w-6 h-6 text-red-400 flex-shrink-0" />
+                    <X className="w-6 h-6 flex-shrink-0" style={{ color: 'var(--coral)' }} />
                   )}
                   <div>
-                    <h3 className="font-semibold mb-1">
-                      {migrationResult.success
-                        ? "Migration Complete!"
-                        : "Migration Failed"}
+                    <h3 className="font-display font-semibold mb-1" style={{ color: 'var(--text-dark)' }}>
+                      {migrationResult.success ? "Migration Complete!" : "Migration Failed"}
                     </h3>
                     {migrationResult.success ? (
-                      <p className="text-gray-400 text-sm">
+                      <p style={{ color: 'var(--text-medium)' }}>
                         Successfully migrated {migrationResult.migrated} of{" "}
                         {migrationResult.total_tracks} tracks.
                         {migrationResult.not_found > 0 && (
-                          <span className="text-yellow-400">
-                            {" "}
-                            {migrationResult.not_found} tracks could not be found on
-                            Tidal.
+                          <span style={{ color: 'var(--coral)' }}>
+                            {" "}{migrationResult.not_found} tracks could not be found on Tidal.
                           </span>
                         )}
                       </p>
                     ) : (
-                      <p className="text-red-400 text-sm">{migrationResult.error}</p>
+                      <p style={{ color: 'var(--coral)' }}>{migrationResult.error}</p>
                     )}
                     {migrationResult.not_found_tracks.length > 0 && (
                       <details className="mt-2">
-                        <summary className="text-sm text-gray-400 cursor-pointer hover:text-white">
+                        <summary className="text-sm cursor-pointer" style={{ color: 'var(--text-medium)' }}>
                           Show tracks not found ({migrationResult.not_found_tracks.length})
                         </summary>
                         <ul className="mt-2 space-y-1">
                           {migrationResult.not_found_tracks.map((track, i) => (
-                            <li key={i} className="text-sm text-gray-500">
+                            <li key={i} className="text-sm" style={{ color: 'var(--text-light)' }}>
                               • {track.name} - {track.artist}
                             </li>
                           ))}
@@ -575,8 +614,11 @@ export default function Playlists() {
             )}
 
             {/* Spotify Tracks */}
-            <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-              <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 border-b border-gray-800 text-gray-400 text-sm">
+            <div className="card overflow-hidden">
+              <div
+                className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 text-sm font-medium"
+                style={{ borderBottom: '1px solid var(--border-light)', color: 'var(--text-medium)' }}
+              >
                 <span className="w-8">#</span>
                 <span>Title</span>
                 <span>Album</span>
@@ -586,34 +628,40 @@ export default function Playlists() {
               {isLoadingSpotifyTracks ? (
                 <TrackSkeleton />
               ) : (
-                <div className="divide-y divide-gray-800 max-h-[500px] overflow-auto">
+                <div className="max-h-[500px] overflow-auto">
                   {spotifyTracks.map((track, index) => (
                     <div
                       key={`${track.id}-${index}`}
-                      className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 items-center hover:bg-gray-800/50 transition-colors"
+                      className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 items-center transition-colors"
+                      style={{ borderBottom: '1px solid var(--border-light)' }}
+                      onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-warm)'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                     >
-                      <span className="w-8 text-gray-500 text-sm">{index + 1}</span>
+                      <span className="w-8 text-sm" style={{ color: 'var(--text-light)' }}>{index + 1}</span>
                       <div className="flex items-center gap-3 min-w-0">
                         {track.image ? (
                           <img
                             src={track.image}
                             alt={track.album}
-                            className="w-10 h-10 rounded"
+                            className="w-10 h-10 rounded-lg"
                           />
                         ) : (
-                          <div className="w-10 h-10 bg-gray-800 rounded flex items-center justify-center">
-                            <Music className="w-5 h-5 text-gray-600" />
+                          <div
+                            className="w-10 h-10 rounded-lg flex items-center justify-center"
+                            style={{ background: 'var(--bg-warm)' }}
+                          >
+                            <Music className="w-5 h-5" style={{ color: 'var(--text-light)' }} />
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="font-medium truncate">{track.name}</p>
-                          <p className="text-sm text-gray-400 truncate">
+                          <p className="font-medium truncate" style={{ color: 'var(--text-dark)' }}>{track.name}</p>
+                          <p className="text-sm truncate" style={{ color: 'var(--text-medium)' }}>
                             {track.artist}
                           </p>
                         </div>
                       </div>
-                      <p className="text-gray-400 truncate">{track.album}</p>
-                      <p className="text-gray-500 text-sm">
+                      <p className="truncate" style={{ color: 'var(--text-medium)' }}>{track.album}</p>
+                      <p className="text-sm" style={{ color: 'var(--text-light)' }}>
                         {formatDuration(track.duration_ms)}
                       </p>
                     </div>
@@ -623,28 +671,33 @@ export default function Playlists() {
             </div>
           </div>
         ) : selectedTidalPlaylist && activeView === "tidal" ? (
-          <div className="p-6">
+          <div className="p-8">
             {/* Tidal Playlist Header */}
             <div className="flex items-start gap-6 mb-8">
               {selectedTidalPlaylist.image ? (
                 <img
                   src={selectedTidalPlaylist.image}
                   alt={selectedTidalPlaylist.name}
-                  className="w-40 h-40 rounded-xl object-cover shadow-xl"
+                  className="w-40 h-40 rounded-2xl object-cover shadow-lg"
                 />
               ) : (
-                <div className="w-40 h-40 bg-gray-800 rounded-xl flex items-center justify-center">
-                  <ListMusic className="w-12 h-12 text-gray-600" />
+                <div
+                  className="w-40 h-40 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'var(--bg-warm)' }}
+                >
+                  <ListMusic className="w-12 h-12" style={{ color: 'var(--text-light)' }} />
                 </div>
               )}
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full font-medium">
+                  <span className="tag tag-blue">
                     Tidal
                   </span>
                 </div>
-                <h1 className="text-3xl font-bold mb-2">{selectedTidalPlaylist.name}</h1>
-                <p className="text-gray-400 mb-4">
+                <h1 className="heading-lg mb-2" style={{ color: 'var(--text-dark)' }}>
+                  {selectedTidalPlaylist.name}
+                </h1>
+                <p className="mb-4" style={{ color: 'var(--text-medium)' }}>
                   {selectedTidalPlaylist.tracks_total} tracks
                   {selectedTidalPlaylist.description && (
                     <span className="block text-sm mt-1">{selectedTidalPlaylist.description}</span>
@@ -652,11 +705,12 @@ export default function Playlists() {
                 </p>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <button
                     onClick={startMergeMode}
                     disabled={isMerging}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-500 hover:bg-purple-400 text-white font-semibold rounded-full transition-all disabled:opacity-50"
+                    className="btn-secondary"
+                    style={{ borderColor: 'var(--blue-accent)', color: 'var(--blue-accent)' }}
                   >
                     <Merge className="w-4 h-4" />
                     Merge Another Playlist
@@ -664,17 +718,18 @@ export default function Playlists() {
 
                   {showDeleteConfirm ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-red-400 text-sm">Delete this playlist?</span>
+                      <span className="text-sm" style={{ color: 'var(--coral)' }}>Delete this playlist?</span>
                       <button
                         onClick={handleDelete}
                         disabled={isDeleting}
-                        className="px-4 py-2 bg-red-500 hover:bg-red-400 text-white font-semibold rounded-full transition-all disabled:opacity-50"
+                        className="px-4 py-2 font-semibold rounded-full transition-all"
+                        style={{ background: 'var(--coral)', color: 'white' }}
                       >
                         {isDeleting ? "Deleting..." : "Yes, Delete"}
                       </button>
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
-                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-full transition-all"
+                        className="btn-secondary"
                       >
                         Cancel
                       </button>
@@ -682,7 +737,8 @@ export default function Playlists() {
                   ) : (
                     <button
                       onClick={() => setShowDeleteConfirm(true)}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold rounded-full transition-all"
+                      className="btn-secondary"
+                      style={{ borderColor: 'var(--coral)', color: 'var(--coral)' }}
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete Playlist
@@ -695,34 +751,34 @@ export default function Playlists() {
             {/* Merge Result */}
             {mergeResult && (
               <div
-                className={`p-4 rounded-xl mb-6 ${
-                  mergeResult.success
-                    ? "bg-purple-500/10 border border-purple-500/20"
-                    : "bg-red-500/10 border border-red-500/20"
-                }`}
+                className="p-4 rounded-2xl mb-6"
+                style={{
+                  background: mergeResult.success ? 'var(--blue-soft)' : 'var(--peach)',
+                  border: mergeResult.success ? '1px solid var(--blue-accent)' : '1px solid var(--coral-light)'
+                }}
               >
                 <div className="flex items-start gap-3">
                   {mergeResult.success ? (
-                    <Check className="w-6 h-6 text-purple-400 flex-shrink-0" />
+                    <Check className="w-6 h-6 flex-shrink-0" style={{ color: 'var(--blue-accent)' }} />
                   ) : (
-                    <X className="w-6 h-6 text-red-400 flex-shrink-0" />
+                    <X className="w-6 h-6 flex-shrink-0" style={{ color: 'var(--coral)' }} />
                   )}
                   <div>
-                    <h3 className="font-semibold mb-1">
+                    <h3 className="font-display font-semibold mb-1" style={{ color: 'var(--text-dark)' }}>
                       {mergeResult.success ? "Merge Complete!" : "Merge Failed"}
                     </h3>
                     {mergeResult.success ? (
-                      <p className="text-gray-400 text-sm">
+                      <p style={{ color: 'var(--text-medium)' }}>
                         Added {mergeResult.tracks_added} tracks to this playlist.
                         {mergeResult.tracks_skipped > 0 && (
-                          <span className="text-yellow-400">
+                          <span style={{ color: 'var(--coral)' }}>
                             {" "}{mergeResult.tracks_skipped} duplicate tracks were skipped.
                           </span>
                         )}
                         {" "}The source playlist has been deleted.
                       </p>
                     ) : (
-                      <p className="text-red-400 text-sm">{mergeResult.error}</p>
+                      <p style={{ color: 'var(--coral)' }}>{mergeResult.error}</p>
                     )}
                   </div>
                 </div>
@@ -730,8 +786,11 @@ export default function Playlists() {
             )}
 
             {/* Tidal Tracks */}
-            <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-              <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 border-b border-gray-800 text-gray-400 text-sm">
+            <div className="card overflow-hidden">
+              <div
+                className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 text-sm font-medium"
+                style={{ borderBottom: '1px solid var(--border-light)', color: 'var(--text-medium)' }}
+              >
                 <span className="w-8">#</span>
                 <span>Title</span>
                 <span>Album</span>
@@ -741,34 +800,40 @@ export default function Playlists() {
               {isLoadingTidalTracks ? (
                 <TrackSkeleton />
               ) : (
-                <div className="divide-y divide-gray-800 max-h-[500px] overflow-auto">
+                <div className="max-h-[500px] overflow-auto">
                   {tidalTracks.map((track, index) => (
                     <div
                       key={`${track.id}-${index}`}
-                      className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 items-center hover:bg-gray-800/50 transition-colors"
+                      className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 items-center transition-colors"
+                      style={{ borderBottom: '1px solid var(--border-light)' }}
+                      onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-warm)'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                     >
-                      <span className="w-8 text-gray-500 text-sm">{index + 1}</span>
+                      <span className="w-8 text-sm" style={{ color: 'var(--text-light)' }}>{index + 1}</span>
                       <div className="flex items-center gap-3 min-w-0">
                         {track.image ? (
                           <img
                             src={track.image}
                             alt={track.album}
-                            className="w-10 h-10 rounded"
+                            className="w-10 h-10 rounded-lg"
                           />
                         ) : (
-                          <div className="w-10 h-10 bg-gray-800 rounded flex items-center justify-center">
-                            <Music className="w-5 h-5 text-gray-600" />
+                          <div
+                            className="w-10 h-10 rounded-lg flex items-center justify-center"
+                            style={{ background: 'var(--bg-warm)' }}
+                          >
+                            <Music className="w-5 h-5" style={{ color: 'var(--text-light)' }} />
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="font-medium truncate">{track.name}</p>
-                          <p className="text-sm text-gray-400 truncate">
+                          <p className="font-medium truncate" style={{ color: 'var(--text-dark)' }}>{track.name}</p>
+                          <p className="text-sm truncate" style={{ color: 'var(--text-medium)' }}>
                             {track.artist}
                           </p>
                         </div>
                       </div>
-                      <p className="text-gray-400 truncate">{track.album}</p>
-                      <p className="text-gray-500 text-sm">
+                      <p className="truncate" style={{ color: 'var(--text-medium)' }}>{track.album}</p>
+                      <p className="text-sm" style={{ color: 'var(--text-light)' }}>
                         {formatDuration(track.duration_ms)}
                       </p>
                     </div>
@@ -779,19 +844,25 @@ export default function Playlists() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-r from-green-500/20 to-cyan-500/20 flex items-center justify-center mb-6">
-              <ListMusic className="w-12 h-12 text-gray-400" />
+            <div
+              className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
+              style={{ background: 'var(--green-pale)' }}
+            >
+              <ListMusic className="w-12 h-12" style={{ color: 'var(--green-primary)' }} />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Select a Playlist</h2>
-            <p className="text-gray-400 max-w-md">
+            <h2 className="heading-md mb-2" style={{ color: 'var(--text-dark)' }}>Select a Playlist</h2>
+            <p className="max-w-md" style={{ color: 'var(--text-medium)' }}>
               Choose a playlist from Spotify or Tidal to view its tracks. Select a Spotify playlist to migrate it to Tidal.
             </p>
             {!isTidalConnected && (
-              <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-start gap-3 max-w-md">
-                <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+              <div
+                className="mt-6 p-4 rounded-2xl flex items-start gap-3 max-w-md"
+                style={{ background: 'var(--peach)', border: '1px solid var(--coral-light)' }}
+              >
+                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--coral)' }} />
                 <div className="text-left">
-                  <p className="font-medium text-yellow-400">Connect Tidal</p>
-                  <p className="text-sm text-gray-400">
+                  <p className="font-medium" style={{ color: 'var(--coral)' }}>Connect Tidal</p>
+                  <p className="text-sm" style={{ color: 'var(--text-medium)' }}>
                     Go to Settings to connect your Tidal account to see your Tidal playlists and migrate from Spotify.
                   </p>
                 </div>
@@ -802,12 +873,21 @@ export default function Playlists() {
       </div>
 
       {/* Tidal Playlists Column */}
-      <div className={`w-72 border-l border-gray-800 flex flex-col ${mergeMode ? 'mt-14' : ''}`}>
-        <div className="p-4 border-b border-gray-800 bg-gradient-to-l from-cyan-500/10 to-transparent">
+      <div
+        className={`w-72 flex flex-col playlist-column ${mergeMode ? 'mt-14' : ''}`}
+        style={{ background: 'var(--bg-warm)', borderLeft: '1px solid var(--border-light)' }}
+      >
+        <div
+          className="p-4"
+          style={{ borderBottom: '1px solid var(--border-light)', background: 'linear-gradient(135deg, var(--blue-soft) 0%, transparent 100%)' }}
+        >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center">
-                <ListMusic className="w-4 h-4 text-black" />
+            <h2 className="font-display font-semibold flex items-center gap-2" style={{ color: 'var(--text-dark)' }}>
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center"
+                style={{ background: 'var(--blue-accent)' }}
+              >
+                <ListMusic className="w-3.5 h-3.5 text-white" />
               </div>
               Tidal Playlists
             </h2>
@@ -815,28 +895,35 @@ export default function Playlists() {
               <button
                 onClick={refreshTidalPlaylists}
                 disabled={isLoadingTidal}
-                className="p-1.5 hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+                className="p-1.5 rounded-lg transition-colors"
                 title="Refresh playlists"
+                style={{ color: 'var(--text-medium)' }}
               >
-                <RefreshCw className={`w-4 h-4 text-gray-400 ${isLoadingTidal ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${isLoadingTidal ? 'animate-spin' : ''}`} />
               </button>
             )}
           </div>
           {isTidalConnected ? (
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-light)' }} />
               <input
                 type="text"
                 placeholder="Search..."
                 value={tidalSearchQuery}
                 onChange={(e) => setTidalSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:border-cyan-500"
+                className="w-full pl-10 pr-4 py-2 rounded-xl text-sm focus:outline-none transition-colors"
+                style={{
+                  background: 'var(--bg-warm)',
+                  border: '1px solid var(--border-light)',
+                  color: 'var(--text-dark)'
+                }}
               />
             </div>
           ) : (
             <button
               onClick={() => navigate("/settings")}
-              className="w-full py-2 px-4 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg text-sm font-medium transition-colors"
+              className="w-full py-2 px-4 rounded-xl text-sm font-medium transition-colors"
+              style={{ background: 'var(--blue-soft)', color: 'var(--blue-accent)' }}
             >
               Connect Tidal
             </button>
@@ -845,54 +932,76 @@ export default function Playlists() {
 
         <div className="flex-1 overflow-auto">
           {!isTidalConnected ? (
-            <div className="p-4 text-center text-gray-500">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-800 flex items-center justify-center">
+            <div className="p-4 text-center" style={{ color: 'var(--text-medium)' }}>
+              <div
+                className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
+                style={{ background: 'var(--bg-warm)' }}
+              >
                 <ListMusic className="w-8 h-8 opacity-50" />
               </div>
               <p className="text-sm mb-2">Not connected</p>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs" style={{ color: 'var(--text-light)' }}>
                 Connect your Tidal account in Settings to see your playlists
               </p>
             </div>
           ) : isLoadingTidal ? (
             <PlaylistSkeleton />
           ) : filteredTidalPlaylists.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
+            <div className="p-4 text-center" style={{ color: 'var(--text-medium)' }}>
               <ListMusic className="w-8 h-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No playlists found</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-800">
+            <div>
               {filteredTidalPlaylists.map((playlist) => (
                 <button
                   key={playlist.id}
                   onClick={() => handleSelectTidalPlaylist(playlist)}
                   disabled={isMerging || (mergeMode && playlist.id === mergeTarget?.id)}
-                  className={`w-full p-3 flex items-center gap-3 hover:bg-gray-800/50 transition-colors text-left ${
-                    selectedTidalPlaylist?.id === playlist.id && !mergeMode ? "bg-cyan-500/10 border-r-2 border-cyan-500" : ""
-                  } ${mergeMode && playlist.id === mergeTarget?.id ? "bg-purple-500/20 border-r-2 border-purple-500" : ""}
-                  ${mergeMode && playlist.id !== mergeTarget?.id ? "hover:bg-purple-500/10 cursor-pointer" : ""}
-                  ${isMerging || (mergeMode && playlist.id === mergeTarget?.id) ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className="w-full p-3 flex items-center gap-3 transition-colors text-left"
+                  style={{
+                    borderBottom: '1px solid var(--border-light)',
+                    background: mergeMode && playlist.id === mergeTarget?.id
+                      ? 'var(--blue-soft)'
+                      : selectedTidalPlaylist?.id === playlist.id && !mergeMode
+                        ? 'var(--blue-soft)'
+                        : 'transparent',
+                    borderRight: selectedTidalPlaylist?.id === playlist.id && !mergeMode
+                      ? '3px solid var(--blue-accent)'
+                      : mergeMode && playlist.id === mergeTarget?.id
+                        ? '3px solid var(--blue-accent)'
+                        : '3px solid transparent',
+                    opacity: isMerging || (mergeMode && playlist.id === mergeTarget?.id) ? 0.5 : 1,
+                    cursor: isMerging || (mergeMode && playlist.id === mergeTarget?.id) ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   {playlist.image ? (
                     <img
                       src={playlist.image}
                       alt={playlist.name}
-                      className="w-10 h-10 rounded object-cover"
+                      className="w-10 h-10 rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="w-10 h-10 bg-gray-800 rounded flex items-center justify-center">
-                      <ListMusic className="w-5 h-5 text-gray-600" />
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ background: 'var(--bg-warm)' }}
+                    >
+                      <ListMusic className="w-5 h-5" style={{ color: 'var(--text-light)' }} />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{playlist.name}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="font-medium text-sm truncate" style={{ color: 'var(--text-dark)' }}>
+                      {playlist.name}
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--text-medium)' }}>
                       {playlist.tracks_total} tracks
                     </p>
                   </div>
                   {mergeMode && playlist.id === mergeTarget?.id && (
-                    <span className="px-2 py-1 bg-purple-500/30 text-purple-300 text-xs rounded-full">
+                    <span
+                      className="px-2 py-1 text-xs rounded-full"
+                      style={{ background: 'var(--blue-accent)', color: 'white' }}
+                    >
                       Target
                     </span>
                   )}
@@ -902,8 +1011,11 @@ export default function Playlists() {
           )}
         </div>
         {isTidalConnected && (
-          <div className="p-3 border-t border-gray-800 bg-gray-900/50">
-            <p className="text-xs text-gray-500 text-center">
+          <div
+            className="p-3"
+            style={{ borderTop: '1px solid var(--border-light)', background: 'var(--bg-warm)' }}
+          >
+            <p className="text-xs text-center" style={{ color: 'var(--text-medium)' }}>
               {tidalPlaylists.length} playlists
             </p>
           </div>
