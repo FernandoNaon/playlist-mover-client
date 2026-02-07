@@ -33,7 +33,14 @@ const timeRangeOptions: { value: TimeRange; label: string }[] = [
 ];
 
 export default function Dashboard() {
-  const { spotifyCode, spotifyUser, isSpotifyConnected, isTidalConnected, tidalUser, isLoading: authLoading } = useAuth();
+  const {
+    spotifyCode,
+    spotifyUser,
+    isSpotifyConnected,
+    isTidalConnected,
+    tidalUser,
+    isLoading: authLoading,
+  } = useAuth();
   const navigate = useNavigate();
 
   const [timeRange, setTimeRange] = useState<TimeRange>("medium_term");
@@ -96,10 +103,30 @@ export default function Dashboard() {
   }
 
   const statCards = [
-    { icon: Music, label: "Saved Tracks", value: stats?.saved_tracks ?? "-", color: "green" },
-    { icon: ListMusic, label: "Playlists", value: stats?.playlists ?? "-", color: "blue" },
-    { icon: Disc3, label: "Saved Albums", value: stats?.saved_albums ?? "-", color: "purple" },
-    { icon: Users, label: "Following", value: stats?.followed_artists ?? "-", color: "pink" },
+    {
+      icon: Music,
+      label: "Saved Tracks",
+      value: stats?.saved_tracks ?? "-",
+      color: "green",
+    },
+    {
+      icon: ListMusic,
+      label: "Playlists",
+      value: stats?.playlists ?? "-",
+      color: "blue",
+    },
+    {
+      icon: Disc3,
+      label: "Saved Albums",
+      value: stats?.saved_albums ?? "-",
+      color: "purple",
+    },
+    {
+      icon: Users,
+      label: "Following",
+      value: stats?.followed_artists ?? "-",
+      color: "pink",
+    },
   ];
 
   return (
@@ -109,7 +136,7 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold mb-2">
           Welcome back, {spotifyUser?.display_name?.split(" ")[0] || "there"}!
         </h1>
-        <p className="text-gray-400">Here's your Spotify listening activity</p>
+        {/* <p className="text-gray-400">Here's your Spotify listening activity</p> */}
       </div>
 
       {/* Quick Actions - Sync to Tidal */}
@@ -119,7 +146,11 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                <svg className="w-7 h-7 text-green-400" viewBox="0 0 24 24" fill="currentColor">
+                <svg
+                  className="w-7 h-7 text-green-400"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
                 </svg>
               </div>
@@ -133,7 +164,8 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-gray-400 text-sm mb-4">
-            {stats?.playlists ?? 0} playlists • {stats?.saved_tracks ?? 0} saved tracks
+            {stats?.playlists ?? 0} playlists • {stats?.saved_tracks ?? 0} saved
+            tracks
           </p>
           <Link
             to="/playlists"
@@ -145,17 +177,25 @@ export default function Dashboard() {
         </div>
 
         {/* Tidal Status/Sync Card */}
-        <div className={`rounded-2xl p-6 border ${
-          isTidalConnected
-            ? "bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 border-cyan-500/20"
-            : "bg-gray-900 border-gray-800"
-        }`}>
+        <div
+          className={`rounded-2xl p-6 border ${
+            isTidalConnected
+              ? "bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 border-cyan-500/20"
+              : "bg-gray-900 border-gray-800"
+          }`}
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                isTidalConnected ? "bg-cyan-500/20" : "bg-gray-800"
-              }`}>
-                <svg className={`w-7 h-7 ${isTidalConnected ? "text-cyan-400" : "text-gray-500"}`} viewBox="0 0 24 24" fill="currentColor">
+              <div
+                className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  isTidalConnected ? "bg-cyan-500/20" : "bg-gray-800"
+                }`}
+              >
+                <svg
+                  className={`w-7 h-7 ${isTidalConnected ? "text-cyan-400" : "text-gray-500"}`}
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M12.012 3.992L8.008 7.996 4.004 3.992 0 7.996l4.004 4.004L0 16.004l4.004 4.004 4.004-4.004 4.004 4.004 4.004-4.004-4.004-4.004 4.004-4.004-4.004-4.004zm4.004 4.004l4.004-4.004L24.024 7.996l-4.004 4.004 4.004 4.004-4.004 4.004-4.004-4.004z" />
                 </svg>
               </div>
@@ -206,6 +246,9 @@ export default function Dashboard() {
         </div>
       </div>
 
+        <p className="text-gray-400 mb-6">Here's your Spotify listening activity</p>
+
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {statCards.map((stat) => (
@@ -213,7 +256,9 @@ export default function Dashboard() {
             key={stat.label}
             className="bg-gray-900 rounded-2xl p-6 border border-gray-800"
           >
-            <div className={`w-10 h-10 rounded-xl bg-${stat.color}-500/10 flex items-center justify-center mb-3`}>
+            <div
+              className={`w-10 h-10 rounded-xl bg-${stat.color}-500/10 flex items-center justify-center mb-3`}
+            >
               <stat.icon className={`w-5 h-5 text-${stat.color}-400`} />
             </div>
             <p className="text-2xl font-bold">
@@ -258,44 +303,44 @@ export default function Dashboard() {
             </h2>
           </div>
           <div className="divide-y divide-gray-800">
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="p-4 flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-800 rounded animate-pulse" />
-                  <div className="flex-1">
-                    <div className="w-32 h-4 bg-gray-800 rounded animate-pulse mb-2" />
-                    <div className="w-24 h-3 bg-gray-800 rounded animate-pulse" />
-                  </div>
-                </div>
-              ))
-            ) : (
-              topTracks.map((track, index) => (
-                <div
-                  key={track.id}
-                  className="p-4 flex items-center gap-3 hover:bg-gray-800/50 transition-colors group"
-                >
-                  <span className="text-gray-500 w-6 text-center text-sm">
-                    {index + 1}
-                  </span>
-                  {track.image ? (
-                    <img
-                      src={track.image}
-                      alt={track.album}
-                      className="w-12 h-12 rounded"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-gray-800 rounded flex items-center justify-center">
-                      <Music className="w-6 h-6 text-gray-600" />
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="p-4 flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-800 rounded animate-pulse" />
+                    <div className="flex-1">
+                      <div className="w-32 h-4 bg-gray-800 rounded animate-pulse mb-2" />
+                      <div className="w-24 h-3 bg-gray-800 rounded animate-pulse" />
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{track.name}</p>
-                    <p className="text-sm text-gray-400 truncate">{track.artist}</p>
                   </div>
-                  <Play className="w-5 h-5 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              ))
-            )}
+                ))
+              : topTracks.map((track, index) => (
+                  <div
+                    key={track.id}
+                    className="p-4 flex items-center gap-3 hover:bg-gray-800/50 transition-colors group"
+                  >
+                    <span className="text-gray-500 w-6 text-center text-sm">
+                      {index + 1}
+                    </span>
+                    {track.image ? (
+                      <img
+                        src={track.image}
+                        alt={track.album}
+                        className="w-12 h-12 rounded"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-800 rounded flex items-center justify-center">
+                        <Music className="w-6 h-6 text-gray-600" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{track.name}</p>
+                      <p className="text-sm text-gray-400 truncate">
+                        {track.artist}
+                      </p>
+                    </div>
+                    <Play className="w-5 h-5 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                ))}
           </div>
         </div>
 
@@ -308,45 +353,43 @@ export default function Dashboard() {
             </h2>
           </div>
           <div className="divide-y divide-gray-800">
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="p-4 flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-800 rounded-full animate-pulse" />
-                  <div className="flex-1">
-                    <div className="w-32 h-4 bg-gray-800 rounded animate-pulse mb-2" />
-                    <div className="w-24 h-3 bg-gray-800 rounded animate-pulse" />
-                  </div>
-                </div>
-              ))
-            ) : (
-              topArtists.map((artist, index) => (
-                <div
-                  key={artist.id}
-                  className="p-4 flex items-center gap-3 hover:bg-gray-800/50 transition-colors"
-                >
-                  <span className="text-gray-500 w-6 text-center text-sm">
-                    {index + 1}
-                  </span>
-                  {artist.image ? (
-                    <img
-                      src={artist.image}
-                      alt={artist.name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center">
-                      <Users className="w-6 h-6 text-gray-600" />
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="p-4 flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-800 rounded-full animate-pulse" />
+                    <div className="flex-1">
+                      <div className="w-32 h-4 bg-gray-800 rounded animate-pulse mb-2" />
+                      <div className="w-24 h-3 bg-gray-800 rounded animate-pulse" />
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{artist.name}</p>
-                    <p className="text-sm text-gray-400 truncate">
-                      {artist.genres.slice(0, 2).join(", ") || "No genres"}
-                    </p>
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              : topArtists.map((artist, index) => (
+                  <div
+                    key={artist.id}
+                    className="p-4 flex items-center gap-3 hover:bg-gray-800/50 transition-colors"
+                  >
+                    <span className="text-gray-500 w-6 text-center text-sm">
+                      {index + 1}
+                    </span>
+                    {artist.image ? (
+                      <img
+                        src={artist.image}
+                        alt={artist.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center">
+                        <Users className="w-6 h-6 text-gray-600" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{artist.name}</p>
+                      <p className="text-sm text-gray-400 truncate">
+                        {artist.genres.slice(0, 2).join(", ") || "No genres"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
           </div>
         </div>
 
@@ -359,43 +402,43 @@ export default function Dashboard() {
             </h2>
           </div>
           <div className="divide-y divide-gray-800">
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="p-4 flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-800 rounded animate-pulse" />
-                  <div className="flex-1">
-                    <div className="w-32 h-4 bg-gray-800 rounded animate-pulse mb-2" />
-                    <div className="w-24 h-3 bg-gray-800 rounded animate-pulse" />
-                  </div>
-                </div>
-              ))
-            ) : (
-              recentTracks.map((track, index) => (
-                <div
-                  key={`${track.id}-${index}`}
-                  className="p-4 flex items-center gap-3 hover:bg-gray-800/50 transition-colors"
-                >
-                  {track.image ? (
-                    <img
-                      src={track.image}
-                      alt={track.album}
-                      className="w-12 h-12 rounded"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-gray-800 rounded flex items-center justify-center">
-                      <Music className="w-6 h-6 text-gray-600" />
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="p-4 flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-800 rounded animate-pulse" />
+                    <div className="flex-1">
+                      <div className="w-32 h-4 bg-gray-800 rounded animate-pulse mb-2" />
+                      <div className="w-24 h-3 bg-gray-800 rounded animate-pulse" />
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{track.name}</p>
-                    <p className="text-sm text-gray-400 truncate">{track.artist}</p>
                   </div>
-                  <span className="text-xs text-gray-500">
-                    {formatPlayedAt(track.played_at)}
-                  </span>
-                </div>
-              ))
-            )}
+                ))
+              : recentTracks.map((track, index) => (
+                  <div
+                    key={`${track.id}-${index}`}
+                    className="p-4 flex items-center gap-3 hover:bg-gray-800/50 transition-colors"
+                  >
+                    {track.image ? (
+                      <img
+                        src={track.image}
+                        alt={track.album}
+                        className="w-12 h-12 rounded"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-800 rounded flex items-center justify-center">
+                        <Music className="w-6 h-6 text-gray-600" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{track.name}</p>
+                      <p className="text-sm text-gray-400 truncate">
+                        {track.artist}
+                      </p>
+                    </div>
+                    <span className="text-xs text-gray-500">
+                      {formatPlayedAt(track.played_at)}
+                    </span>
+                  </div>
+                ))}
           </div>
         </div>
       </div>

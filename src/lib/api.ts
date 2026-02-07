@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:5000";
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -177,6 +177,74 @@ export async function checkTidalAuth(sessionId: string): Promise<TidalAuthStatus
   return fetchApi("/tidal/check_auth", {
     method: "POST",
     body: JSON.stringify({ session_id: sessionId }),
+  });
+}
+
+export interface TidalPlaylist {
+  id: string;
+  name: string;
+  tracks_total: number;
+  image?: string;
+  description?: string;
+}
+
+export interface TidalTrack {
+  id: string;
+  name: string;
+  artist: string;
+  album: string;
+  duration_ms: number;
+  image?: string;
+}
+
+export async function fetchTidalPlaylists(sessionId: string): Promise<TidalPlaylist[]> {
+  return fetchApi("/tidal/playlists", {
+    method: "POST",
+    body: JSON.stringify({ session_id: sessionId }),
+  });
+}
+
+export async function fetchTidalPlaylistTracks(sessionId: string, playlistId: string): Promise<TidalTrack[]> {
+  return fetchApi("/tidal/playlist_tracks", {
+    method: "POST",
+    body: JSON.stringify({ session_id: sessionId, playlist_id: playlistId }),
+  });
+}
+
+export interface DeletePlaylistResult {
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
+export async function deleteTidalPlaylist(sessionId: string, playlistId: string): Promise<DeletePlaylistResult> {
+  return fetchApi("/tidal/delete_playlist", {
+    method: "POST",
+    body: JSON.stringify({ session_id: sessionId, playlist_id: playlistId }),
+  });
+}
+
+export interface MergePlaylistsResult {
+  success: boolean;
+  message: string;
+  tracks_added: number;
+  tracks_skipped: number;
+  source_deleted: boolean;
+  error?: string;
+}
+
+export async function mergeTidalPlaylists(
+  sessionId: string,
+  sourcePlaylistId: string,
+  targetPlaylistId: string
+): Promise<MergePlaylistsResult> {
+  return fetchApi("/tidal/merge_playlists", {
+    method: "POST",
+    body: JSON.stringify({
+      session_id: sessionId,
+      source_playlist_id: sourcePlaylistId,
+      target_playlist_id: targetPlaylistId,
+    }),
   });
 }
 

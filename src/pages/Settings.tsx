@@ -298,7 +298,6 @@ export default function Settings() {
 
       {/* Danger Zone */}
       <div className="mt-12">
-        <h2 className="text-lg font-semibold text-red-400 mb-4">Danger Zone</h2>
         <div className="bg-gray-900 rounded-2xl border border-red-500/20 p-6">
           <div className="flex items-center justify-between">
             <div>
