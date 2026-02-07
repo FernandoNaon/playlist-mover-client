@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Heart,
@@ -10,14 +10,18 @@ import {
   AlertCircle,
   ChevronDown,
   Loader2,
+  ListMusic,
+  Plus,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
   fetchLikedSongs,
+  fetchTidalPlaylists,
   migrateTracks,
   type LikedTrack,
   type MigrationResult,
   type TrackToMigrate,
+  type TidalPlaylist,
 } from "../lib/api";
 
 export default function LikedSongs() {
@@ -34,18 +38,43 @@ export default function LikedSongs() {
   // Selection state
   const [selectedTracks, setSelectedTracks] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
+  const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
 
   // Migration state
   const [isMigrating, setIsMigrating] = useState(false);
   const [migrationResult, setMigrationResult] = useState<MigrationResult | null>(null);
   const [playlistName, setPlaylistName] = useState("My Liked Songs");
-  const [showNameInput, setShowNameInput] = useState(false);
+  const [showDestinationPicker, setShowDestinationPicker] = useState(false);
+
+  // Destination options: "favorites", "new", or playlist ID
+  const [destination, setDestination] = useState<string>("favorites");
+  const [tidalPlaylists, setTidalPlaylists] = useState<TidalPlaylist[]>([]);
+  const [isLoadingPlaylists, setIsLoadingPlaylists] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isSpotifyConnected) {
       navigate("/");
     }
   }, [authLoading, isSpotifyConnected, navigate]);
+
+  // Load Tidal playlists when connected
+  useEffect(() => {
+    if (!tidalSessionId || !isTidalConnected) return;
+
+    const loadTidalPlaylists = async () => {
+      setIsLoadingPlaylists(true);
+      try {
+        const playlists = await fetchTidalPlaylists(tidalSessionId);
+        setTidalPlaylists(playlists);
+      } catch (error) {
+        console.error("Error fetching Tidal playlists:", error);
+      } finally {
+        setIsLoadingPlaylists(false);
+      }
+    };
+
+    loadTidalPlaylists();
+  }, [tidalSessionId, isTidalConnected]);
 
   // Load initial liked songs
   useEffect(() => {
@@ -96,17 +125,33 @@ export default function LikedSongs() {
     );
   }, [tracks, searchQuery]);
 
-  // Toggle track selection
-  const toggleTrack = (trackId: string) => {
-    setSelectedTracks((prev) => {
-      const next = new Set(prev);
-      if (next.has(trackId)) {
-        next.delete(trackId);
-      } else {
-        next.add(trackId);
-      }
-      return next;
-    });
+  // Toggle track selection with shift-click range support
+  const toggleTrack = (trackId: string, index: number, event: React.MouseEvent) => {
+    // Shift-click for range selection
+    if (event.shiftKey && lastClickedIndex !== null) {
+      const start = Math.min(lastClickedIndex, index);
+      const end = Math.max(lastClickedIndex, index);
+      const rangeIds = filteredTracks.slice(start, end + 1).map((t) => t.id);
+
+      setSelectedTracks((prev) => {
+        const next = new Set(prev);
+        rangeIds.forEach((id) => next.add(id));
+        return next;
+      });
+    } else {
+      // Normal click - toggle single track
+      setSelectedTracks((prev) => {
+        const next = new Set(prev);
+        if (next.has(trackId)) {
+          next.delete(trackId);
+        } else {
+          next.add(trackId);
+        }
+        return next;
+      });
+    }
+
+    setLastClickedIndex(index);
   };
 
   // Select all visible tracks
@@ -136,17 +181,19 @@ export default function LikedSongs() {
           album: t.album,
         }));
 
-      const result = await migrateTracks(
+      const result = await migrateTracks({
         spotifyCode,
         tidalSessionId,
-        tracksToMigrate,
-        playlistName
-      );
+        tracks: tracksToMigrate,
+        playlistName: destination === "new" ? playlistName : undefined,
+        targetPlaylistId: destination !== "favorites" && destination !== "new" ? destination : undefined,
+        addToFavorites: destination === "favorites",
+      });
       setMigrationResult(result);
 
       if (result.success) {
         setSelectedTracks(new Set());
-        setShowNameInput(false);
+        setShowDestinationPicker(false);
       }
     } catch (error) {
       setMigrationResult({
@@ -161,6 +208,32 @@ export default function LikedSongs() {
       setIsMigrating(false);
     }
   };
+
+  // Get destination label
+  const getDestinationLabel = () => {
+    if (destination === "favorites") return "Favorites";
+    if (destination === "new") return playlistName;
+    const playlist = tidalPlaylists.find((p) => p.id === destination);
+    return playlist?.name || "Select destination";
+  };
+
+  // Click outside to close dropdown
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDestinationPicker(false);
+      }
+    };
+
+    if (showDestinationPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDestinationPicker]);
 
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
@@ -220,7 +293,10 @@ export default function LikedSongs() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <span className="text-xs hidden sm:inline" style={{ color: 'var(--text-light)' }}>
+              Tip: Shift+click to select range
+            </span>
             <button
               onClick={selectAll}
               className="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
@@ -264,38 +340,144 @@ export default function LikedSongs() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {showNameInput ? (
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  placeholder="Playlist name"
-                  value={playlistName}
-                  onChange={(e) => setPlaylistName(e.target.value)}
-                  className="px-3 py-2 rounded-lg text-sm focus:outline-none"
-                  style={{
-                    background: 'white',
-                    border: '1px solid var(--border-light)',
-                    color: 'var(--text-dark)'
-                  }}
-                />
-                <button
-                  onClick={() => setShowNameInput(false)}
-                  className="p-2 rounded-lg"
-                  style={{ color: 'var(--text-medium)' }}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Destination Picker */}
+            <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => setShowNameInput(true)}
-                className="text-sm underline"
-                style={{ color: 'var(--green-primary)' }}
+                onClick={() => setShowDestinationPicker(!showDestinationPicker)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm"
+                style={{
+                  background: 'white',
+                  border: '1px solid var(--border-light)',
+                  color: 'var(--text-medium)'
+                }}
               >
-                Playlist: {playlistName}
+                {destination === "favorites" ? (
+                  <Heart className="w-4 h-4" style={{ color: 'var(--coral)' }} />
+                ) : destination === "new" ? (
+                  <Plus className="w-4 h-4" style={{ color: 'var(--green-primary)' }} />
+                ) : (
+                  <ListMusic className="w-4 h-4" style={{ color: 'var(--green-primary)' }} />
+                )}
+                <span>{getDestinationLabel()}</span>
+                <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-light)' }} />
               </button>
-            )}
+
+              {/* Dropdown */}
+              {showDestinationPicker && (
+                <div
+                  className="absolute top-full left-0 mt-2 w-72 rounded-xl shadow-lg z-50 overflow-hidden"
+                  style={{ background: 'white', border: '1px solid var(--border-light)' }}
+                >
+                  {/* Favorites option */}
+                  <button
+                    onClick={() => {
+                      setDestination("favorites");
+                      setShowDestinationPicker(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors"
+                    style={{
+                      background: destination === "favorites" ? 'var(--green-pale)' : 'transparent',
+                      borderBottom: '1px solid var(--border-light)'
+                    }}
+                  >
+                    <Heart className="w-5 h-5" style={{ color: 'var(--coral)' }} />
+                    <div>
+                      <p className="font-medium" style={{ color: 'var(--text-medium)' }}>Tidal Favorites</p>
+                      <p className="text-xs" style={{ color: 'var(--text-light)' }}>Add to your liked songs</p>
+                    </div>
+                    {destination === "favorites" && (
+                      <Check className="w-4 h-4 ml-auto" style={{ color: 'var(--green-primary)' }} />
+                    )}
+                  </button>
+
+                  {/* Create new playlist option */}
+                  <div
+                    className="px-4 py-3"
+                    style={{
+                      background: destination === "new" ? 'var(--green-pale)' : 'transparent',
+                      borderBottom: '1px solid var(--border-light)'
+                    }}
+                  >
+                    <button
+                      onClick={() => setDestination("new")}
+                      className="w-full flex items-center gap-3 text-left"
+                    >
+                      <Plus className="w-5 h-5" style={{ color: 'var(--green-primary)' }} />
+                      <div className="flex-1">
+                        <p className="font-medium" style={{ color: 'var(--text-medium)' }}>Create New Playlist</p>
+                        {destination === "new" ? (
+                          <input
+                            type="text"
+                            placeholder="Playlist name"
+                            value={playlistName}
+                            onChange={(e) => setPlaylistName(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="mt-1 w-full px-2 py-1 rounded text-sm focus:outline-none"
+                            style={{
+                              background: 'white',
+                              border: '1px solid var(--border-light)',
+                              color: 'var(--text-medium)'
+                            }}
+                          />
+                        ) : (
+                          <p className="text-xs" style={{ color: 'var(--text-light)' }}>Create a new playlist on Tidal</p>
+                        )}
+                      </div>
+                      {destination === "new" && (
+                        <Check className="w-4 h-4" style={{ color: 'var(--green-primary)' }} />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Existing playlists */}
+                  {tidalPlaylists.length > 0 && (
+                    <>
+                      <div className="px-4 py-2" style={{ background: 'var(--bg-warm)' }}>
+                        <p className="text-xs font-medium" style={{ color: 'var(--text-light)' }}>
+                          YOUR TIDAL PLAYLISTS
+                        </p>
+                      </div>
+                      <div className="max-h-48 overflow-auto">
+                        {tidalPlaylists.map((playlist) => (
+                          <button
+                            key={playlist.id}
+                            onClick={() => {
+                              setDestination(playlist.id);
+                              setShowDestinationPicker(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-2 text-left transition-colors"
+                            style={{
+                              background: destination === playlist.id ? 'var(--green-pale)' : 'transparent',
+                            }}
+                          >
+                            <ListMusic className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-medium)' }} />
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate" style={{ color: 'var(--text-medium)' }}>
+                                {playlist.name}
+                              </p>
+                              <p className="text-xs" style={{ color: 'var(--text-light)' }}>
+                                {playlist.tracks_total} tracks
+                              </p>
+                            </div>
+                            {destination === playlist.id && (
+                              <Check className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--green-primary)' }} />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {isLoadingPlaylists && (
+                    <div className="px-4 py-3 flex items-center gap-2" style={{ color: 'var(--text-medium)' }}>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span className="text-sm">Loading playlists...</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {isTidalConnected ? (
               <button
@@ -433,8 +615,8 @@ export default function LikedSongs() {
                 return (
                   <div
                     key={track.id}
-                    onClick={() => toggleTrack(track.id)}
-                    className="grid grid-cols-[auto_auto_1fr_1fr_auto_auto] gap-4 p-4 items-center cursor-pointer transition-colors"
+                    onClick={(e) => toggleTrack(track.id, index, e)}
+                    className="grid grid-cols-[auto_auto_1fr_1fr_auto_auto] gap-4 p-4 items-center cursor-pointer transition-colors select-none"
                     style={{
                       borderBottom: '1px solid var(--border-light)',
                       background: isSelected ? 'var(--green-pale)' : 'transparent',

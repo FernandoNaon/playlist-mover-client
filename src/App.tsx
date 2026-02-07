@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Callback from "./pages/Callback";
 import Dashboard from "./pages/Dashboard";
 import Playlists from "./pages/Playlists";
+import LikedSongs from "./pages/LikedSongs";
 import Settings from "./pages/Settings";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/playlists" element={<Playlists />} />
+              <Route path="/liked-songs" element={<LikedSongs />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

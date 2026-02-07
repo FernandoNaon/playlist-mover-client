@@ -309,19 +309,25 @@ export interface TrackToMigrate {
   album: string;
 }
 
-export async function migrateTracks(
-  spotifyCode: string,
-  tidalSessionId: string,
-  tracks: TrackToMigrate[],
-  playlistName: string
-): Promise<MigrationResult> {
+export interface MigrateTracksOptions {
+  spotifyCode: string;
+  tidalSessionId: string;
+  tracks: TrackToMigrate[];
+  playlistName?: string;
+  targetPlaylistId?: string;  // Existing playlist ID
+  addToFavorites?: boolean;   // Add to Tidal favorites
+}
+
+export async function migrateTracks(options: MigrateTracksOptions): Promise<MigrationResult> {
   return fetchApi("/migrate_tracks", {
     method: "POST",
     body: JSON.stringify({
-      spotify_code: spotifyCode,
-      tidal_session_id: tidalSessionId,
-      tracks,
-      playlist_name: playlistName,
+      spotify_code: options.spotifyCode,
+      tidal_session_id: options.tidalSessionId,
+      tracks: options.tracks,
+      playlist_name: options.playlistName || "Migrated Songs",
+      target_playlist_id: options.targetPlaylistId,
+      add_to_favorites: options.addToFavorites,
     }),
   });
 }
