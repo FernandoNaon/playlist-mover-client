@@ -225,7 +225,7 @@ export default function Home() {
                 color: 'var(--blue-accent)',
                 bg: 'var(--blue-soft)'
               }
-            ].map((feature, index) => (
+            ].map((feature) => (
               <div key={feature.title} className="card text-center py-8 px-6">
                 <div
                   className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center"
