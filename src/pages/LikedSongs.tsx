@@ -16,24 +16,39 @@ import {
 import { useAuth } from "../context/AuthContext";
 import {
   fetchLikedSongs,
+  fetchTidalLikedSongs,
   fetchTidalPlaylists,
+  fetchPlaylists,
   migrateTracks,
+  migrateTidalTracks,
   type LikedTrack,
+  type TidalLikedTrack,
   type MigrationResult,
   type TrackToMigrate,
   type TidalPlaylist,
+  type Playlist,
 } from "../lib/api";
 
 export default function LikedSongs() {
   const { spotifyCode, isSpotifyConnected, tidalSessionId, isTidalConnected, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Tracks state
-  const [tracks, setTracks] = useState<LikedTrack[]>([]);
-  const [totalTracks, setTotalTracks] = useState(0);
+  // Source toggle: "spotify" or "tidal"
+  const [source, setSource] = useState<"spotify" | "tidal">("spotify");
+
+  // Spotify Tracks state
+  const [spotifyTracks, setSpotifyTracks] = useState<LikedTrack[]>([]);
+  const [spotifyTotalTracks, setSpotifyTotalTracks] = useState(0);
+  const [spotifyHasMore, setSpotifyHasMore] = useState(true);
+
+  // Tidal Tracks state
+  const [tidalTracks, setTidalTracks] = useState<TidalLikedTrack[]>([]);
+  const [tidalTotalTracks, setTidalTotalTracks] = useState(0);
+  const [tidalHasMore, setTidalHasMore] = useState(true);
+
+  // Loading state
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
 
   // Selection state
   const [selectedTracks, setSelectedTracks] = useState<Set<string>>(new Set());
@@ -46,10 +61,17 @@ export default function LikedSongs() {
   const [playlistName, setPlaylistName] = useState("My Liked Songs");
   const [showDestinationPicker, setShowDestinationPicker] = useState(false);
 
-  // Destination options: "favorites", "new", or playlist ID
+  // Destination options for Spotify->Tidal: "favorites", "new", or tidal playlist ID
+  // Destination options for Tidal->Spotify: "liked", "new", or spotify playlist ID
   const [destination, setDestination] = useState<string>("favorites");
   const [tidalPlaylists, setTidalPlaylists] = useState<TidalPlaylist[]>([]);
+  const [spotifyPlaylists, setSpotifyPlaylists] = useState<Playlist[]>([]);
   const [isLoadingPlaylists, setIsLoadingPlaylists] = useState(false);
+
+  // Computed values based on source
+  const tracks = source === "spotify" ? spotifyTracks : tidalTracks;
+  const totalTracks = source === "spotify" ? spotifyTotalTracks : tidalTotalTracks;
+  const hasMore = source === "spotify" ? spotifyHasMore : tidalHasMore;
 
   useEffect(() => {
     if (!authLoading && !isSpotifyConnected) {
@@ -57,26 +79,39 @@ export default function LikedSongs() {
     }
   }, [authLoading, isSpotifyConnected, navigate]);
 
-  // Load Tidal playlists when connected
+  // Reset selection when source changes
   useEffect(() => {
-    if (!tidalSessionId || !isTidalConnected) return;
+    setSelectedTracks(new Set());
+    setSearchQuery("");
+    setMigrationResult(null);
+    setDestination(source === "spotify" ? "favorites" : "liked");
+  }, [source]);
 
-    const loadTidalPlaylists = async () => {
+  // Load destination playlists based on source
+  useEffect(() => {
+    const loadPlaylists = async () => {
       setIsLoadingPlaylists(true);
       try {
-        const playlists = await fetchTidalPlaylists(tidalSessionId);
-        setTidalPlaylists(playlists);
+        if (source === "spotify" && tidalSessionId && isTidalConnected) {
+          // Migrating to Tidal, load Tidal playlists
+          const playlists = await fetchTidalPlaylists(tidalSessionId);
+          setTidalPlaylists(playlists);
+        } else if (source === "tidal" && spotifyCode) {
+          // Migrating to Spotify, load Spotify playlists
+          const playlists = await fetchPlaylists(spotifyCode);
+          setSpotifyPlaylists(playlists);
+        }
       } catch (error) {
-        console.error("Error fetching Tidal playlists:", error);
+        console.error("Error fetching playlists:", error);
       } finally {
         setIsLoadingPlaylists(false);
       }
     };
 
-    loadTidalPlaylists();
-  }, [tidalSessionId, isTidalConnected]);
+    loadPlaylists();
+  }, [source, tidalSessionId, isTidalConnected, spotifyCode]);
 
-  // Load initial liked songs
+  // Load Spotify liked songs
   useEffect(() => {
     if (!spotifyCode) return;
 
@@ -84,11 +119,11 @@ export default function LikedSongs() {
       setIsLoading(true);
       try {
         const data = await fetchLikedSongs(spotifyCode, 50, 0);
-        setTracks(data.tracks);
-        setTotalTracks(data.total);
-        setHasMore(data.has_more);
+        setSpotifyTracks(data.tracks);
+        setSpotifyTotalTracks(data.total);
+        setSpotifyHasMore(data.has_more);
       } catch (error) {
-        console.error("Error fetching liked songs:", error);
+        console.error("Error fetching Spotify liked songs:", error);
       } finally {
         setIsLoading(false);
       }
@@ -97,15 +132,42 @@ export default function LikedSongs() {
     loadLikedSongs();
   }, [spotifyCode]);
 
+  // Load Tidal liked songs
+  useEffect(() => {
+    if (!tidalSessionId || !isTidalConnected) return;
+
+    const loadTidalLikedSongs = async () => {
+      if (source === "tidal") setIsLoading(true);
+      try {
+        const data = await fetchTidalLikedSongs(tidalSessionId, 50, 0);
+        setTidalTracks(data.tracks);
+        setTidalTotalTracks(data.total);
+        setTidalHasMore(data.has_more);
+      } catch (error) {
+        console.error("Error fetching Tidal liked songs:", error);
+      } finally {
+        if (source === "tidal") setIsLoading(false);
+      }
+    };
+
+    loadTidalLikedSongs();
+  }, [tidalSessionId, isTidalConnected, source]);
+
   // Load more songs
   const loadMore = async () => {
-    if (!spotifyCode || isLoadingMore || !hasMore) return;
+    if (isLoadingMore || !hasMore) return;
 
     setIsLoadingMore(true);
     try {
-      const data = await fetchLikedSongs(spotifyCode, 50, tracks.length);
-      setTracks((prev) => [...prev, ...data.tracks]);
-      setHasMore(data.has_more);
+      if (source === "spotify" && spotifyCode) {
+        const data = await fetchLikedSongs(spotifyCode, 50, spotifyTracks.length);
+        setSpotifyTracks((prev) => [...prev, ...data.tracks]);
+        setSpotifyHasMore(data.has_more);
+      } else if (source === "tidal" && tidalSessionId) {
+        const data = await fetchTidalLikedSongs(tidalSessionId, 50, tidalTracks.length);
+        setTidalTracks((prev) => [...prev, ...data.tracks]);
+        setTidalHasMore(data.has_more);
+      }
     } catch (error) {
       console.error("Error loading more songs:", error);
     } finally {
@@ -165,7 +227,7 @@ export default function LikedSongs() {
     setSelectedTracks(new Set());
   };
 
-  // Handle migration
+  // Handle migration - supports both Spotify->Tidal and Tidal->Spotify
   const handleMigrate = async () => {
     if (!spotifyCode || !tidalSessionId || selectedTracks.size === 0) return;
 
@@ -177,18 +239,34 @@ export default function LikedSongs() {
         .filter((t) => selectedTracks.has(t.id))
         .map((t) => ({
           name: t.name,
-          artist: t.artists[0] || t.artist.split(",")[0].trim(),
+          artist: t.artists?.[0] || t.artist.split(",")[0].trim(),
           album: t.album,
         }));
 
-      const result = await migrateTracks({
-        spotifyCode,
-        tidalSessionId,
-        tracks: tracksToMigrate,
-        playlistName: destination === "new" ? playlistName : undefined,
-        targetPlaylistId: destination !== "favorites" && destination !== "new" ? destination : undefined,
-        addToFavorites: destination === "favorites",
-      });
+      let result: MigrationResult;
+
+      if (source === "spotify") {
+        // Spotify -> Tidal
+        result = await migrateTracks({
+          spotifyCode,
+          tidalSessionId,
+          tracks: tracksToMigrate,
+          playlistName: destination === "new" ? playlistName : undefined,
+          targetPlaylistId: destination !== "favorites" && destination !== "new" ? destination : undefined,
+          addToFavorites: destination === "favorites",
+        });
+      } else {
+        // Tidal -> Spotify
+        result = await migrateTidalTracks({
+          spotifyCode,
+          tidalSessionId,
+          tracks: tracksToMigrate,
+          playlistName: destination === "new" ? playlistName : undefined,
+          targetPlaylistId: destination !== "liked" && destination !== "new" ? destination : undefined,
+          addToLiked: destination === "liked",
+        });
+      }
+
       setMigrationResult(result);
 
       if (result.success) {
@@ -211,10 +289,19 @@ export default function LikedSongs() {
 
   // Get destination label
   const getDestinationLabel = () => {
-    if (destination === "favorites") return "Favorites";
-    if (destination === "new") return playlistName;
-    const playlist = tidalPlaylists.find((p) => p.id === destination);
-    return playlist?.name || "Select destination";
+    if (source === "spotify") {
+      // Migrating to Tidal
+      if (destination === "favorites") return "Tidal Favorites";
+      if (destination === "new") return playlistName || "New Playlist";
+      const playlist = tidalPlaylists.find((p) => p.id === destination);
+      return playlist?.name || "Select destination";
+    } else {
+      // Migrating to Spotify
+      if (destination === "liked") return "Spotify Liked Songs";
+      if (destination === "new") return playlistName || "New Playlist";
+      const playlist = spotifyPlaylists.find((p) => p.id === destination);
+      return playlist?.name || "Select destination";
+    }
   };
 
   // Click outside to close dropdown
@@ -260,19 +347,53 @@ export default function LikedSongs() {
     <div className="p-8 max-w-6xl mx-auto" style={{ background: 'var(--bg-cream)', minHeight: '100%' }}>
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center"
-            style={{ background: 'var(--coral)', color: 'white' }}
-          >
-            <Heart className="w-8 h-8" />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center"
+              style={{ background: source === "spotify" ? '#1DB954' : 'var(--text-dark)', color: 'white' }}
+            >
+              <Heart className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="heading-lg" style={{ color: 'var(--text-dark)' }}>Liked Songs</h1>
+              <p style={{ color: 'var(--text-medium)' }}>
+                {totalTracks.toLocaleString()} songs from {source === "spotify" ? "Spotify" : "Tidal"}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="heading-lg" style={{ color: 'var(--text-dark)' }}>Liked Songs</h1>
-            <p style={{ color: 'var(--text-medium)' }}>
-              {totalTracks.toLocaleString()} songs in your library
-            </p>
-          </div>
+
+          {/* Source Toggle */}
+          {isTidalConnected && (
+            <div className="flex items-center gap-2 p-1 rounded-xl" style={{ background: 'var(--bg-warm)' }}>
+              <button
+                onClick={() => setSource("spotify")}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                style={{
+                  background: source === "spotify" ? '#1DB954' : 'transparent',
+                  color: source === "spotify" ? 'white' : 'var(--text-medium)',
+                }}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                </svg>
+                Spotify
+              </button>
+              <button
+                onClick={() => setSource("tidal")}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                style={{
+                  background: source === "tidal" ? 'var(--text-dark)' : 'transparent',
+                  color: source === "tidal" ? 'white' : 'var(--text-medium)',
+                }}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.012 3.992L8.008 7.996 4.004 3.992 0 7.996l4.004 4.004L0 16.004l4.004 4.004 4.004-4.004 4.004 4.004 4.004-4.004-4.004-4.004 4.004-4.004-4.004-4.004zm4.004 4.004l4.004-4.004L24.024 7.996l-4.004 4.004 4.004 4.004-4.004 4.004-4.004-4.004z" />
+                </svg>
+                Tidal
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Search and Actions */}
@@ -335,7 +456,7 @@ export default function LikedSongs() {
                 {selectedTracks.size} track{selectedTracks.size !== 1 ? "s" : ""} selected
               </p>
               <p className="text-sm" style={{ color: 'var(--text-medium)' }}>
-                Ready to migrate to Tidal
+                Ready to migrate to {source === "spotify" ? "Tidal" : "Spotify"}
               </p>
             </div>
           </div>
@@ -352,7 +473,7 @@ export default function LikedSongs() {
                   color: 'var(--text-medium)'
                 }}
               >
-                {destination === "favorites" ? (
+                {(destination === "favorites" || destination === "liked") ? (
                   <Heart className="w-4 h-4" style={{ color: 'var(--coral)' }} />
                 ) : destination === "new" ? (
                   <Plus className="w-4 h-4" style={{ color: 'var(--green-primary)' }} />
@@ -369,24 +490,26 @@ export default function LikedSongs() {
                   className="absolute top-full left-0 mt-2 w-72 rounded-xl shadow-lg z-50 overflow-hidden"
                   style={{ background: 'white', border: '1px solid var(--border-light)' }}
                 >
-                  {/* Favorites option */}
+                  {/* Liked/Favorites option */}
                   <button
                     onClick={() => {
-                      setDestination("favorites");
+                      setDestination(source === "spotify" ? "favorites" : "liked");
                       setShowDestinationPicker(false);
                     }}
                     className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors"
                     style={{
-                      background: destination === "favorites" ? 'var(--green-pale)' : 'transparent',
+                      background: (destination === "favorites" || destination === "liked") ? 'var(--green-pale)' : 'transparent',
                       borderBottom: '1px solid var(--border-light)'
                     }}
                   >
                     <Heart className="w-5 h-5" style={{ color: 'var(--coral)' }} />
                     <div>
-                      <p className="font-medium" style={{ color: 'var(--text-medium)' }}>Tidal Favorites</p>
+                      <p className="font-medium" style={{ color: 'var(--text-medium)' }}>
+                        {source === "spotify" ? "Tidal Favorites" : "Spotify Liked Songs"}
+                      </p>
                       <p className="text-xs" style={{ color: 'var(--text-light)' }}>Add to your liked songs</p>
                     </div>
-                    {destination === "favorites" && (
+                    {(destination === "favorites" || destination === "liked") && (
                       <Check className="w-4 h-4 ml-auto" style={{ color: 'var(--green-primary)' }} />
                     )}
                   </button>
@@ -421,7 +544,9 @@ export default function LikedSongs() {
                             }}
                           />
                         ) : (
-                          <p className="text-xs" style={{ color: 'var(--text-light)' }}>Create a new playlist on Tidal</p>
+                          <p className="text-xs" style={{ color: 'var(--text-light)' }}>
+                            Create a new playlist on {source === "spotify" ? "Tidal" : "Spotify"}
+                          </p>
                         )}
                       </div>
                       {destination === "new" && (
@@ -430,8 +555,8 @@ export default function LikedSongs() {
                     </button>
                   </div>
 
-                  {/* Existing playlists */}
-                  {tidalPlaylists.length > 0 && (
+                  {/* Existing playlists - show Tidal or Spotify based on source */}
+                  {source === "spotify" && tidalPlaylists.length > 0 && (
                     <>
                       <div className="px-4 py-2" style={{ background: 'var(--bg-warm)' }}>
                         <p className="text-xs font-medium" style={{ color: 'var(--text-light)' }}>
@@ -440,6 +565,45 @@ export default function LikedSongs() {
                       </div>
                       <div className="max-h-48 overflow-auto">
                         {tidalPlaylists.map((playlist) => (
+                          <button
+                            key={playlist.id}
+                            onClick={() => {
+                              setDestination(playlist.id);
+                              setShowDestinationPicker(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-2 text-left transition-colors"
+                            style={{
+                              background: destination === playlist.id ? 'var(--green-pale)' : 'transparent',
+                            }}
+                          >
+                            <ListMusic className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-medium)' }} />
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate" style={{ color: 'var(--text-medium)' }}>
+                                {playlist.name}
+                              </p>
+                              <p className="text-xs" style={{ color: 'var(--text-light)' }}>
+                                {playlist.tracks_total} tracks
+                              </p>
+                            </div>
+                            {destination === playlist.id && (
+                              <Check className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--green-primary)' }} />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {/* Spotify playlists (when source is Tidal) */}
+                  {source === "tidal" && spotifyPlaylists.length > 0 && (
+                    <>
+                      <div className="px-4 py-2" style={{ background: 'var(--bg-warm)' }}>
+                        <p className="text-xs font-medium" style={{ color: 'var(--text-light)' }}>
+                          YOUR SPOTIFY PLAYLISTS
+                        </p>
+                      </div>
+                      <div className="max-h-48 overflow-auto">
+                        {spotifyPlaylists.map((playlist) => (
                           <button
                             key={playlist.id}
                             onClick={() => {
@@ -479,7 +643,8 @@ export default function LikedSongs() {
               )}
             </div>
 
-            {isTidalConnected ? (
+            {/* Migrate button - show based on destination availability */}
+            {(source === "spotify" ? isTidalConnected : isSpotifyConnected) ? (
               <button
                 onClick={handleMigrate}
                 disabled={isMigrating || selectedTracks.size === 0}
@@ -493,7 +658,7 @@ export default function LikedSongs() {
                 ) : (
                   <>
                     <ArrowRight className="w-5 h-5" />
-                    Migrate to Tidal
+                    Migrate to {source === "spotify" ? "Tidal" : "Spotify"}
                   </>
                 )}
               </button>
@@ -502,7 +667,7 @@ export default function LikedSongs() {
                 onClick={() => navigate("/settings")}
                 className="btn-secondary"
               >
-                Connect Tidal
+                Connect {source === "spotify" ? "Tidal" : "Spotify"}
               </button>
             )}
           </div>
@@ -534,7 +699,7 @@ export default function LikedSongs() {
                   {migrationResult.total_tracks} tracks to "{migrationResult.playlist_name}".
                   {migrationResult.not_found > 0 && (
                     <span style={{ color: 'var(--coral)' }}>
-                      {" "}{migrationResult.not_found} tracks could not be found on Tidal.
+                      {" "}{migrationResult.not_found} tracks could not be found on {source === "spotify" ? "Tidal" : "Spotify"}.
                     </span>
                   )}
                 </p>
@@ -560,8 +725,8 @@ export default function LikedSongs() {
         </div>
       )}
 
-      {/* Not connected warning */}
-      {!isTidalConnected && (
+      {/* Not connected warning - show for Tidal if viewing Spotify, vice versa */}
+      {source === "spotify" && !isTidalConnected && (
         <div
           className="mb-6 p-4 rounded-2xl flex items-start gap-3"
           style={{ background: 'var(--peach)', border: '1px solid var(--coral-light)' }}
@@ -686,7 +851,7 @@ export default function LikedSongs() {
 
                     {/* Added date */}
                     <p className="text-sm" style={{ color: 'var(--text-light)' }}>
-                      {formatDate(track.added_at)}
+                      {track.added_at ? formatDate(track.added_at) : '-'}
                     </p>
 
                     {/* Duration */}
