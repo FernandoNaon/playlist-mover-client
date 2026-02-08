@@ -204,13 +204,21 @@ export default function Dashboard() {
                 className="w-12 h-12 rounded-2xl flex items-center justify-center"
                 style={{ background: isTidalConnected ? 'var(--blue-soft)' : 'var(--border-light)' }}
               >
-                <svg
-                  className="w-7 h-7"
-                  viewBox="0 0 24 24"
-                  fill={isTidalConnected ? 'var(--blue-accent)' : 'var(--text-light)'}
-                >
-                  <path d="M12.012 3.992L8.008 7.996 4.004 3.992 0 7.996l4.004 4.004L0 16.004l4.004 4.004 4.004-4.004 4.004 4.004 4.004-4.004-4.004-4.004 4.004-4.004-4.004-4.004zm4.004 4.004l4.004-4.004L24.024 7.996l-4.004 4.004 4.004 4.004-4.004 4.004-4.004-4.004z" />
-                </svg>
+            <svg
+                      className="w-8 h-8"
+                      viewBox="0 0 24 24"
+                      fill="var(--text-dark)"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="
+    M6 4 L3 7 L6 10 L9 7 Z
+    M12 4 L9 7 L12 10 L15 7 Z
+    M18 4 L15 7 L18 10 L21 7 Z
+    M12 10 L9 13 L12 16 L15 13 Z
+  "
+                      />
+                    </svg>
               </div>
               <div>
                 <h3 className="font-display font-semibold text-lg" style={{ color: 'var(--text-dark)' }}>Tidal</h3>
