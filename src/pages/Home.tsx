@@ -177,7 +177,7 @@ export default function Home() {
                 <div className="card text-center py-8">
                   <div
                     className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-                    style={{ background: 'var(--text-dark)', opacity: 0.1 }}
+                    style={{ background: 'var(--border-light)' }}
                   >
                     <svg className="w-8 h-8" viewBox="0 0 24 24" fill="var(--text-dark)">
                       <path d="M12.012 3.992L8.008 7.996 4.004 3.992 0 7.996l4.004 4.004L0 16.004l4.004 4.004 4.004-4.004 4.004 4.004 4.004-4.004-4.004-4.004 4.004-4.004-4.004-4.004zm4.004 4.004l4.004-4.004L24.024 7.996l-4.004 4.004 4.004 4.004-4.004 4.004-4.004-4.004z" />
