@@ -377,3 +377,75 @@ export async function migrateTracks(options: MigrateTracksOptions): Promise<Migr
     }),
   });
 }
+
+// ==================== TIDAL LIKED SONGS ====================
+
+export interface TidalLikedSongsResponse {
+  tracks: TidalLikedTrack[];
+  total: number;
+  has_more: boolean;
+}
+
+export interface TidalLikedTrack {
+  id: string;
+  name: string;
+  artist: string;
+  artists: string[];
+  album: string;
+  duration_ms: number;
+  image?: string;
+  added_at?: string;
+}
+
+export async function fetchTidalLikedSongs(
+  sessionId: string,
+  limit: number = 50,
+  offset: number = 0
+): Promise<TidalLikedSongsResponse> {
+  return fetchApi("/tidal/liked_songs", {
+    method: "POST",
+    body: JSON.stringify({ session_id: sessionId, limit, offset }),
+  });
+}
+
+// ==================== TIDAL TO SPOTIFY MIGRATION ====================
+
+export async function migrateTidalPlaylistToSpotify(
+  spotifyCode: string,
+  tidalSessionId: string,
+  playlistId: string,
+  playlistName?: string
+): Promise<MigrationResult> {
+  return fetchApi("/migrate_tidal_to_spotify", {
+    method: "POST",
+    body: JSON.stringify({
+      spotify_code: spotifyCode,
+      tidal_session_id: tidalSessionId,
+      playlist_id: playlistId,
+      playlist_name: playlistName,
+    }),
+  });
+}
+
+export interface MigrateTidalTracksOptions {
+  spotifyCode: string;
+  tidalSessionId: string;
+  tracks: TrackToMigrate[];
+  playlistName?: string;
+  targetPlaylistId?: string;  // Existing Spotify playlist ID
+  addToLiked?: boolean;       // Add to Spotify liked songs
+}
+
+export async function migrateTidalTracks(options: MigrateTidalTracksOptions): Promise<MigrationResult> {
+  return fetchApi("/migrate_tidal_tracks", {
+    method: "POST",
+    body: JSON.stringify({
+      spotify_code: options.spotifyCode,
+      tidal_session_id: options.tidalSessionId,
+      tracks: options.tracks,
+      playlist_name: options.playlistName || "Migrated from Tidal",
+      target_playlist_id: options.targetPlaylistId,
+      add_to_liked: options.addToLiked,
+    }),
+  });
+}

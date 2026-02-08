@@ -25,6 +25,7 @@ import {
   fetchTidalPlaylistTracks,
   migratePlaylist,
   migrateTracks,
+  migrateTidalPlaylistToSpotify,
   deleteTidalPlaylist,
   mergeTidalPlaylists,
   type Playlist,
@@ -446,6 +447,42 @@ export default function Playlists() {
       setMigrationResult({
         success: false,
         total_tracks: selectedTracks.size,
+        migrated: 0,
+        not_found: 0,
+        not_found_tracks: [],
+        error: error instanceof Error ? error.message : "Migration failed",
+      });
+    } finally {
+      setIsMigrating(false);
+    }
+  };
+
+  // Handle Tidal to Spotify migration
+  const handleTidalToSpotify = async () => {
+    if (!spotifyCode || !tidalSessionId || !selectedTidalPlaylist) return;
+
+    setIsMigrating(true);
+    setMigrationResult(null);
+
+    try {
+      const result = await migrateTidalPlaylistToSpotify(
+        spotifyCode,
+        tidalSessionId,
+        selectedTidalPlaylist.id,
+        selectedTidalPlaylist.name
+      );
+      setMigrationResult(result);
+
+      // Refresh Spotify playlists after successful migration
+      if (result.success && spotifyCode) {
+        const data = await fetchPlaylists(spotifyCode);
+        setSpotifyPlaylists(data);
+        setFilteredSpotifyPlaylists(data);
+      }
+    } catch (error) {
+      setMigrationResult({
+        success: false,
+        total_tracks: selectedTidalPlaylist.tracks_total || 0,
         migrated: 0,
         not_found: 0,
         not_found_tracks: [],
@@ -1012,6 +1049,26 @@ export default function Playlists() {
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-3 flex-wrap">
+                  {/* Migrate to Spotify Button */}
+                  <button
+                    onClick={handleTidalToSpotify}
+                    disabled={isMigrating || tidalTracks.length === 0}
+                    className="btn-primary"
+                    style={{ background: '#1DB954' }}
+                  >
+                    {isMigrating ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Migrating...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowRight className="w-5 h-5" />
+                        Migrate to Spotify
+                      </>
+                    )}
+                  </button>
+
                   <button
                     onClick={startMergeMode}
                     disabled={isMerging}
@@ -1053,6 +1110,57 @@ export default function Playlists() {
                 </div>
               </div>
             </div>
+
+            {/* Migration Result (Tidal to Spotify) */}
+            {migrationResult && activeView === "tidal" && (
+              <div
+                className="p-4 rounded-2xl mb-6"
+                style={{
+                  background: migrationResult.success ? 'var(--green-pale)' : 'var(--peach)',
+                  border: migrationResult.success ? '1px solid var(--green-light)' : '1px solid var(--coral-light)'
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  {migrationResult.success ? (
+                    <Check className="w-6 h-6 flex-shrink-0" style={{ color: 'var(--green-primary)' }} />
+                  ) : (
+                    <X className="w-6 h-6 flex-shrink-0" style={{ color: 'var(--coral)' }} />
+                  )}
+                  <div>
+                    <h3 className="font-display font-semibold mb-1" style={{ color: 'var(--text-dark)' }}>
+                      {migrationResult.success ? "Migration Complete!" : "Migration Failed"}
+                    </h3>
+                    {migrationResult.success ? (
+                      <p style={{ color: 'var(--text-medium)' }}>
+                        Successfully migrated {migrationResult.migrated} of{" "}
+                        {migrationResult.total_tracks} tracks to Spotify.
+                        {migrationResult.not_found > 0 && (
+                          <span style={{ color: 'var(--coral)' }}>
+                            {" "}{migrationResult.not_found} tracks could not be found on Spotify.
+                          </span>
+                        )}
+                      </p>
+                    ) : (
+                      <p style={{ color: 'var(--coral)' }}>{migrationResult.error}</p>
+                    )}
+                    {migrationResult.not_found_tracks && migrationResult.not_found_tracks.length > 0 && (
+                      <details className="mt-2">
+                        <summary className="text-sm cursor-pointer" style={{ color: 'var(--text-medium)' }}>
+                          Show tracks not found ({migrationResult.not_found_tracks.length})
+                        </summary>
+                        <ul className="mt-2 space-y-1">
+                          {migrationResult.not_found_tracks.map((track, i) => (
+                            <li key={i} className="text-sm" style={{ color: 'var(--text-light)' }}>
+                              • {track.name} - {track.artist}
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Merge Result */}
             {mergeResult && (
