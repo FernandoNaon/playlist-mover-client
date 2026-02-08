@@ -43,6 +43,52 @@ export async function getUserProfile(code: string): Promise<SpotifyUser> {
   });
 }
 
+// ==================== DATABASE USER TRACKING ====================
+
+export interface AppUser {
+  id: string;
+  email?: string;
+  display_name?: string;
+  avatar_url?: string;
+  tier: string;
+  is_active: boolean;
+  created_at?: string;
+  last_login_at?: string;
+  usage?: {
+    migrations_today: number;
+    migrations_limit: number;
+  };
+}
+
+export async function registerUser(code: string): Promise<AppUser> {
+  return fetchApi("/user/me", {
+    method: "POST",
+    body: JSON.stringify({ code }),
+  });
+}
+
+export interface MigrationHistory {
+  id: string;
+  source_provider: string;
+  target_provider: string;
+  source_playlist_name?: string;
+  target_playlist_name?: string;
+  migration_type?: string;
+  total_tracks: number;
+  migrated_tracks: number;
+  skipped_tracks: number;
+  status: string;
+  created_at?: string;
+  completed_at?: string;
+}
+
+export async function getMigrationHistory(code: string, limit: number = 20): Promise<MigrationHistory[]> {
+  return fetchApi("/user/history", {
+    method: "POST",
+    body: JSON.stringify({ code, limit }),
+  });
+}
+
 // ==================== SPOTIFY PLAYLISTS ====================
 
 export interface Playlist {
