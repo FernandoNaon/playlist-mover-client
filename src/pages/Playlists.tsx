@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ListMusic,
@@ -12,6 +12,10 @@ import {
   RefreshCw,
   Trash2,
   Merge,
+  ChevronDown,
+  Loader2,
+  Heart,
+  Plus,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -20,6 +24,7 @@ import {
   fetchTidalPlaylists,
   fetchTidalPlaylistTracks,
   migratePlaylist,
+  migrateTracks,
   deleteTidalPlaylist,
   mergeTidalPlaylists,
   type Playlist,
@@ -28,6 +33,7 @@ import {
   type TidalTrack,
   type MigrationResult,
   type MergePlaylistsResult,
+  type TrackToMigrate,
 } from "../lib/api";
 
 export default function Playlists() {
@@ -55,6 +61,16 @@ export default function Playlists() {
   // Migration state
   const [isMigrating, setIsMigrating] = useState(false);
   const [migrationResult, setMigrationResult] = useState<MigrationResult | null>(null);
+
+  // Track selection state (for selective migration)
+  const [selectedTracks, setSelectedTracks] = useState<Set<string>>(new Set());
+  const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
+
+  // Destination picker state
+  const [showDestinationPicker, setShowDestinationPicker] = useState(false);
+  const [destination, setDestination] = useState<string>("new"); // "favorites", "new", or playlist ID
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Delete state
   const [isDeleting, setIsDeleting] = useState(false);
@@ -130,6 +146,23 @@ export default function Playlists() {
     );
   }, [tidalSearchQuery, tidalPlaylists]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDestinationPicker(false);
+      }
+    };
+
+    if (showDestinationPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDestinationPicker]);
+
   const handleSelectSpotifyPlaylist = async (playlist: Playlist) => {
     if (!spotifyCode) return;
 
@@ -148,6 +181,10 @@ export default function Playlists() {
     setShowDeleteConfirm(false);
     setIsLoadingSpotifyTracks(true);
     setActiveView("spotify");
+    // Reset track selection
+    setSelectedTracks(new Set());
+    setLastClickedIndex(null);
+    setNewPlaylistName(playlist.name); // Default new playlist name to source playlist name
 
     try {
       const data = await fetchPlaylistTracks(spotifyCode, playlist.id);
@@ -317,6 +354,105 @@ export default function Playlists() {
       console.error("Error refreshing Tidal playlists:", error);
     } finally {
       setIsLoadingTidal(false);
+    }
+  };
+
+  // Toggle track selection with shift-click range support
+  const toggleTrack = (trackId: string, index: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+
+    if (event.shiftKey && lastClickedIndex !== null) {
+      const start = Math.min(lastClickedIndex, index);
+      const end = Math.max(lastClickedIndex, index);
+      const rangeIds = spotifyTracks.slice(start, end + 1).map((t) => t.id);
+
+      setSelectedTracks((prev) => {
+        const next = new Set(prev);
+        rangeIds.forEach((id) => next.add(id));
+        return next;
+      });
+    } else {
+      setSelectedTracks((prev) => {
+        const next = new Set(prev);
+        if (next.has(trackId)) {
+          next.delete(trackId);
+        } else {
+          next.add(trackId);
+        }
+        return next;
+      });
+    }
+
+    setLastClickedIndex(index);
+  };
+
+  // Select all tracks
+  const selectAllTracks = () => {
+    const allIds = new Set(spotifyTracks.map((t) => t.id));
+    setSelectedTracks(allIds);
+  };
+
+  // Deselect all tracks
+  const deselectAllTracks = () => {
+    setSelectedTracks(new Set());
+  };
+
+  // Check if all tracks are selected
+  const allTracksSelected = spotifyTracks.length > 0 && selectedTracks.size === spotifyTracks.length;
+
+  // Get destination label
+  const getDestinationLabel = () => {
+    if (destination === "favorites") return "Tidal Favorites";
+    if (destination === "new") return newPlaylistName || "New Playlist";
+    const playlist = tidalPlaylists.find((p) => p.id === destination);
+    return playlist?.name || "Select destination";
+  };
+
+  // Handle selective migration (when tracks are selected)
+  const handleSelectiveMigrate = async () => {
+    if (!spotifyCode || !tidalSessionId || selectedTracks.size === 0) return;
+
+    setIsMigrating(true);
+    setMigrationResult(null);
+
+    try {
+      const tracksToMigrate: TrackToMigrate[] = spotifyTracks
+        .filter((t) => selectedTracks.has(t.id))
+        .map((t) => ({
+          name: t.name,
+          artist: t.artists[0] || t.artist.split(",")[0].trim(),
+          album: t.album,
+        }));
+
+      const result = await migrateTracks({
+        spotifyCode,
+        tidalSessionId,
+        tracks: tracksToMigrate,
+        playlistName: destination === "new" ? (newPlaylistName || selectedSpotifyPlaylist?.name || "Migrated Playlist") : undefined,
+        targetPlaylistId: destination !== "favorites" && destination !== "new" ? destination : undefined,
+        addToFavorites: destination === "favorites",
+      });
+      setMigrationResult(result);
+
+      if (result.success) {
+        setSelectedTracks(new Set());
+        setShowDestinationPicker(false);
+        // Refresh Tidal playlists
+        const data = await fetchTidalPlaylists(tidalSessionId);
+        setTidalPlaylists(data);
+        setFilteredTidalPlaylists(data);
+      }
+    } catch (error) {
+      setMigrationResult({
+        success: false,
+        total_tracks: selectedTracks.size,
+        migrated: 0,
+        not_found: 0,
+        not_found_tracks: [],
+        error: error instanceof Error ? error.message : "Migration failed",
+      });
+    } finally {
+      setIsMigrating(false);
     }
   };
 
@@ -528,28 +664,161 @@ export default function Playlists() {
                   {selectedSpotifyPlaylist.owner} • {selectedSpotifyPlaylist.tracks_total} tracks
                 </p>
 
-                {/* Migration Button */}
+                {/* Migration Controls */}
                 {isTidalConnected ? (
-                  <button
-                    onClick={handleMigrate}
-                    disabled={isMigrating || spotifyTracks.length === 0}
-                    className="btn-primary"
-                  >
-                    {isMigrating ? (
-                      <>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {/* Destination Picker */}
+                    <div className="relative" ref={dropdownRef}>
+                      <button
+                        onClick={() => setShowDestinationPicker(!showDestinationPicker)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm"
+                        style={{
+                          background: 'white',
+                          border: '1px solid var(--border-light)',
+                          color: 'var(--text-medium)'
+                        }}
+                      >
+                        {destination === "favorites" ? (
+                          <Heart className="w-4 h-4" style={{ color: 'var(--coral)' }} />
+                        ) : destination === "new" ? (
+                          <Plus className="w-4 h-4" style={{ color: 'var(--green-primary)' }} />
+                        ) : (
+                          <ListMusic className="w-4 h-4" style={{ color: 'var(--green-primary)' }} />
+                        )}
+                        <span>{getDestinationLabel()}</span>
+                        <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-light)' }} />
+                      </button>
+
+                      {/* Destination Dropdown */}
+                      {showDestinationPicker && (
                         <div
-                          className="w-5 h-5 rounded-full animate-spin"
-                          style={{ border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white' }}
-                        />
-                        Migrating...
-                      </>
-                    ) : (
-                      <>
-                        <ArrowRight className="w-5 h-5" />
-                        Migrate to Tidal
-                      </>
-                    )}
-                  </button>
+                          className="absolute top-full left-0 mt-2 w-72 rounded-xl shadow-lg z-50 overflow-hidden"
+                          style={{ background: 'white', border: '1px solid var(--border-light)' }}
+                        >
+                          {/* Favorites option */}
+                          <button
+                            onClick={() => {
+                              setDestination("favorites");
+                              setShowDestinationPicker(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors"
+                            style={{
+                              background: destination === "favorites" ? 'var(--green-pale)' : 'transparent',
+                              borderBottom: '1px solid var(--border-light)'
+                            }}
+                          >
+                            <Heart className="w-5 h-5" style={{ color: 'var(--coral)' }} />
+                            <div>
+                              <p className="font-medium" style={{ color: 'var(--text-medium)' }}>Tidal Favorites</p>
+                              <p className="text-xs" style={{ color: 'var(--text-light)' }}>Add to your liked songs</p>
+                            </div>
+                            {destination === "favorites" && (
+                              <Check className="w-4 h-4 ml-auto" style={{ color: 'var(--green-primary)' }} />
+                            )}
+                          </button>
+
+                          {/* Create new playlist option */}
+                          <div
+                            className="px-4 py-3"
+                            style={{
+                              background: destination === "new" ? 'var(--green-pale)' : 'transparent',
+                              borderBottom: '1px solid var(--border-light)'
+                            }}
+                          >
+                            <button
+                              onClick={() => setDestination("new")}
+                              className="w-full flex items-center gap-3 text-left"
+                            >
+                              <Plus className="w-5 h-5" style={{ color: 'var(--green-primary)' }} />
+                              <div className="flex-1">
+                                <p className="font-medium" style={{ color: 'var(--text-medium)' }}>Create New Playlist</p>
+                                {destination === "new" ? (
+                                  <input
+                                    type="text"
+                                    placeholder="Playlist name"
+                                    value={newPlaylistName}
+                                    onChange={(e) => setNewPlaylistName(e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="mt-1 w-full px-2 py-1 rounded text-sm focus:outline-none"
+                                    style={{
+                                      background: 'white',
+                                      border: '1px solid var(--border-light)',
+                                      color: 'var(--text-medium)'
+                                    }}
+                                  />
+                                ) : (
+                                  <p className="text-xs" style={{ color: 'var(--text-light)' }}>Create a new playlist on Tidal</p>
+                                )}
+                              </div>
+                              {destination === "new" && (
+                                <Check className="w-4 h-4" style={{ color: 'var(--green-primary)' }} />
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Existing Tidal playlists */}
+                          {tidalPlaylists.length > 0 && (
+                            <>
+                              <div className="px-4 py-2" style={{ background: 'var(--bg-warm)' }}>
+                                <p className="text-xs font-medium" style={{ color: 'var(--text-light)' }}>
+                                  YOUR TIDAL PLAYLISTS
+                                </p>
+                              </div>
+                              <div className="max-h-48 overflow-auto">
+                                {tidalPlaylists.map((playlist) => (
+                                  <button
+                                    key={playlist.id}
+                                    onClick={() => {
+                                      setDestination(playlist.id);
+                                      setShowDestinationPicker(false);
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-2 text-left transition-colors"
+                                    style={{
+                                      background: destination === playlist.id ? 'var(--green-pale)' : 'transparent',
+                                    }}
+                                  >
+                                    <ListMusic className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-medium)' }} />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-medium truncate" style={{ color: 'var(--text-medium)' }}>
+                                        {playlist.name}
+                                      </p>
+                                      <p className="text-xs" style={{ color: 'var(--text-light)' }}>
+                                        {playlist.tracks_total} tracks
+                                      </p>
+                                    </div>
+                                    {destination === playlist.id && (
+                                      <Check className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--green-primary)' }} />
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Migrate Button */}
+                    <button
+                      onClick={selectedTracks.size > 0 ? handleSelectiveMigrate : handleMigrate}
+                      disabled={isMigrating || spotifyTracks.length === 0}
+                      className="btn-primary"
+                    >
+                      {isMigrating ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Migrating...
+                        </>
+                      ) : (
+                        <>
+                          <ArrowRight className="w-5 h-5" />
+                          {selectedTracks.size > 0
+                            ? `Migrate ${selectedTracks.size} Track${selectedTracks.size !== 1 ? 's' : ''}`
+                            : 'Migrate All'}
+                        </>
+                      )}
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={() => navigate("/settings")}
@@ -616,9 +885,23 @@ export default function Playlists() {
             {/* Spotify Tracks */}
             <div className="card overflow-hidden">
               <div
-                className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 text-sm font-medium"
+                className="grid grid-cols-[auto_auto_1fr_1fr_auto] gap-4 p-4 text-sm font-medium items-center"
                 style={{ borderBottom: '1px solid var(--border-light)', color: 'var(--text-medium)' }}
               >
+                {/* Select All Checkbox */}
+                <div className="w-10 flex justify-center">
+                  <button
+                    onClick={allTracksSelected ? deselectAllTracks : selectAllTracks}
+                    className="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
+                    style={{
+                      borderColor: allTracksSelected ? 'var(--green-primary)' : 'var(--border-light)',
+                      background: allTracksSelected ? 'var(--green-primary)' : 'transparent',
+                    }}
+                    title={allTracksSelected ? "Deselect all" : "Select all"}
+                  >
+                    {allTracksSelected && <Check className="w-3 h-3 text-white" />}
+                  </button>
+                </div>
                 <span className="w-8">#</span>
                 <span>Title</span>
                 <span>Album</span>
@@ -629,43 +912,66 @@ export default function Playlists() {
                 <TrackSkeleton />
               ) : (
                 <div className="max-h-[500px] overflow-auto">
-                  {spotifyTracks.map((track, index) => (
-                    <div
-                      key={`${track.id}-${index}`}
-                      className="grid grid-cols-[auto_1fr_1fr_auto] gap-4 p-4 items-center transition-colors"
-                      style={{ borderBottom: '1px solid var(--border-light)' }}
-                      onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-warm)'}
-                      onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <span className="w-8 text-sm" style={{ color: 'var(--text-light)' }}>{index + 1}</span>
-                      <div className="flex items-center gap-3 min-w-0">
-                        {track.image ? (
-                          <img
-                            src={track.image}
-                            alt={track.album}
-                            className="w-10 h-10 rounded-lg"
-                          />
-                        ) : (
+                  {spotifyTracks.map((track, index) => {
+                    const isSelected = selectedTracks.has(track.id);
+                    return (
+                      <div
+                        key={`${track.id}-${index}`}
+                        onClick={(e) => toggleTrack(track.id, index, e)}
+                        className="grid grid-cols-[auto_auto_1fr_1fr_auto] gap-4 p-4 items-center transition-colors cursor-pointer select-none"
+                        style={{
+                          borderBottom: '1px solid var(--border-light)',
+                          background: isSelected ? 'var(--green-pale)' : 'transparent',
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isSelected) e.currentTarget.style.background = 'var(--bg-warm)';
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isSelected) e.currentTarget.style.background = 'transparent';
+                        }}
+                      >
+                        {/* Checkbox */}
+                        <div className="w-10 flex justify-center">
                           <div
-                            className="w-10 h-10 rounded-lg flex items-center justify-center"
-                            style={{ background: 'var(--bg-warm)' }}
+                            className="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
+                            style={{
+                              borderColor: isSelected ? 'var(--green-primary)' : 'var(--border-light)',
+                              background: isSelected ? 'var(--green-primary)' : 'transparent',
+                            }}
                           >
-                            <Music className="w-5 h-5" style={{ color: 'var(--text-light)' }} />
+                            {isSelected && <Check className="w-3 h-3 text-white" />}
                           </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="font-medium truncate" style={{ color: 'var(--text-dark)' }}>{track.name}</p>
-                          <p className="text-sm truncate" style={{ color: 'var(--text-medium)' }}>
-                            {track.artist}
-                          </p>
                         </div>
+                        <span className="w-8 text-sm" style={{ color: 'var(--text-light)' }}>{index + 1}</span>
+                        <div className="flex items-center gap-3 min-w-0">
+                          {track.image ? (
+                            <img
+                              src={track.image}
+                              alt={track.album}
+                              className="w-10 h-10 rounded-lg"
+                            />
+                          ) : (
+                            <div
+                              className="w-10 h-10 rounded-lg flex items-center justify-center"
+                              style={{ background: 'var(--bg-warm)' }}
+                            >
+                              <Music className="w-5 h-5" style={{ color: 'var(--text-light)' }} />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium truncate" style={{ color: 'var(--text-dark)' }}>{track.name}</p>
+                            <p className="text-sm truncate" style={{ color: 'var(--text-medium)' }}>
+                              {track.artist}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="truncate" style={{ color: 'var(--text-medium)' }}>{track.album}</p>
+                        <p className="text-sm" style={{ color: 'var(--text-light)' }}>
+                          {formatDuration(track.duration_ms)}
+                        </p>
                       </div>
-                      <p className="truncate" style={{ color: 'var(--text-medium)' }}>{track.album}</p>
-                      <p className="text-sm" style={{ color: 'var(--text-light)' }}>
-                        {formatDuration(track.duration_ms)}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -580,10 +580,23 @@ export default function LikedSongs() {
       <div className="card overflow-hidden">
         {/* Header */}
         <div
-          className="grid grid-cols-[auto_auto_1fr_1fr_auto_auto] gap-4 p-4 text-sm font-medium"
+          className="grid grid-cols-[auto_auto_1fr_1fr_auto_auto] gap-4 p-4 text-sm font-medium items-center"
           style={{ borderBottom: '1px solid var(--border-light)', color: 'var(--text-medium)' }}
         >
-          <span className="w-10"></span>
+          {/* Select All Checkbox */}
+          <div className="w-10 flex justify-center">
+            <button
+              onClick={selectedTracks.size === filteredTracks.length && filteredTracks.length > 0 ? deselectAll : selectAll}
+              className="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
+              style={{
+                borderColor: selectedTracks.size === filteredTracks.length && filteredTracks.length > 0 ? 'var(--green-primary)' : 'var(--border-light)',
+                background: selectedTracks.size === filteredTracks.length && filteredTracks.length > 0 ? 'var(--green-primary)' : 'transparent',
+              }}
+              title={selectedTracks.size === filteredTracks.length ? "Deselect all" : "Select all"}
+            >
+              {selectedTracks.size === filteredTracks.length && filteredTracks.length > 0 && <Check className="w-3 h-3 text-white" />}
+            </button>
+          </div>
           <span className="w-8">#</span>
           <span>Title</span>
           <span>Album</span>
